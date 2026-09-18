@@ -1,0 +1,25 @@
+TASK
+Create frame zero of a casual vertical social video using the supplied master photo as the sole identity reference. The resulting still must be ready to animate into a complete three-second "sudden realization" reaction.
+
+IDENTITY LOCK — HIGHEST PRIORITY
+Show the same woman as the master reference. Preserve her facial structure, proportions, eye shape and colour, eyebrows, nose, lips, jawline, hairline, skin tone, natural asymmetry, visible skin texture, freckles and marks. Preserve her hair colour, length and texture. Her hair is long, not a bob: visible strands pass both shoulders and continue naturally beyond the lower frame edge. Some hair may sit behind a shoulder or tuck naturally near the clothing collar, but it must not end at her chin, jaw or neck. Do not shorten, cut, redesign or hide its overall length. Do not beautify, idealize, average or reinterpret her identity. Clothing is not part of her identity and may change between videos.
+
+FRAME-ZERO PERFORMANCE
+This is the instant immediately before the reaction, not the peak reaction. She has just noticed something. Her eyes are directed at the lens, her lips are naturally slightly parted and her eyebrows are still mostly relaxed. Her expression contains only the first hint of curiosity, including ordinary subtle left-right facial asymmetry. Do not show widened eyes, a completed smile, laughter, shock or a hand covering her mouth yet.
+
+Her posture is casually imperfect: seated with a mild natural slouch, the camera-bearing shoulder subtly higher from holding the phone, and a tiny unposed head tilt. She holds the front-camera phone herself in one extended arm outside the image. Show only her shoulder caps and upper chest; the camera hand and phone are necessarily outside their own image, and the free hand remains below the crop. The pose must support this following three-second motion without a cut: eyes widen slightly, eyebrows lift, she leans a little closer, then forms a restrained disbelieving half-smile and settles.
+
+SETTING AND CLOTHING
+She is wearing $wardrobe. She is seated in an ordinary lived-in bedroom. Include an imperfectly made bed, ordinary bedding, a basic bedside surface, a charging cable, a few clothes or everyday belongings, and subtle warm or purple LED ambience. The room must feel affordable, personal and genuinely used—not dirty, luxurious, professionally styled or deliberately staged.
+
+CAMERA AND COMPOSITION
+9:16 vertical front-camera selfie, upper-chest close shot at natural arm's length. Leave a little uneven space above her head and place her subtly off-centre rather than perfectly aligned. The viewpoint is close to eye level but a few centimetres imperfect, with a slight tilt caused by her grip. Use believable mild front-camera perspective without extreme distortion. Keep enough plain clothing beneath her face for a short hook caption. The phone cannot be visible because it is the camera making this image; no second camera or mirror appears.
+
+REALISM
+This must look like an unplanned paused frame from an ordinary person's real video, not a finished photograph. Preserve pores, uneven skin tone, under-eye texture, small blemishes, flyaway hairs, clothing lint and normal facial asymmetry. Use mixed window and room light, slightly imperfect white balance, mild exposure unevenness, restrained smartphone sharpening and subtle sensor texture. Background details should be coherent but a little soft and incidental. Allow minor compositional awkwardness. Do not clean, balance or perfect the scene.
+
+AVOID
+No polished portrait, passport-photo symmetry, perfectly centred pose, glamour pose, influencer bedroom, perfect décor, ring light, studio or cinematic lighting, beauty filter, skin smoothing, plastic skin, reshaped face, enlarged eyes, extreme symmetry, heavy makeup, artificial bokeh, HDR appearance, bob or chin-length hairstyle, shortened hair, extreme selfie distortion, visible phone, second camera, photographer viewpoint, enlarged foreground hand, completed reaction, theatrical acting, malformed anatomy, extra fingers, duplicate objects, text, captions, logos or watermark.
+
+OUTPUT
+Return exactly one photorealistic 9:16 image. No collage and no alternatives inside the image.

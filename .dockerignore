@@ -1,0 +1,17 @@
+.git
+.env
+.venv
+.pytest_cache
+__pycache__
+data
+tests
+animation-lab-output
+batch-preview
+batch-preview-output
+compose-lab-output
+demo-bank
+hook-copy-output
+hook-video-output
+scene-lab-output
+text-overlay-lab-output
+flagd-ugc-dokploy-data-*.tar.gz

@@ -1,0 +1,23 @@
+services:
+  flagd-ugc-pipeline:
+    build: .
+    restart: unless-stopped
+    init: true
+    # Keep the first Dokploy deployment inert while preflight and a no-delivery
+    # batch are run from its console. Change this to ["flagd-ugc", "daemon"]
+    # only after the complete batch and Telegram delivery have been approved.
+    command: ["sleep", "infinity"]
+    environment:
+      DATA_DIR: /data
+      TZ: Europe/London
+    volumes:
+      - flagd-ugc-data:/data
+    healthcheck:
+      test: ["CMD", "flagd-ugc", "healthcheck"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  flagd-ugc-data:

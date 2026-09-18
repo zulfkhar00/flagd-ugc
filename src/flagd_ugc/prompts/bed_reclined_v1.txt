@@ -1,0 +1,23 @@
+TASK
+Create frame zero of a casual vertical social video using the supplied master photo as the sole identity reference. The still begins a continuous three-second "sudden realization" reaction.
+
+IDENTITY LOCK — HIGHEST PRIORITY
+Show the same woman as the master reference. Preserve her facial structure, proportions, eyes, eyebrows, nose, lips, jawline, hairline, skin tone, natural asymmetry, pores, freckles, blemishes and marks. Preserve her exact hair colour, long length and texture. Do not beautify, idealize, average or reinterpret her identity. Clothing is not part of her identity and may change between videos.
+
+SCENARIO AND POSE
+She is reclining diagonally against rumpled pillows on an imperfectly made bed in an ordinary lived-in bedroom. She wears $wardrobe. Her torso is supported unevenly by the bedding. One arm extends naturally upward and slightly forward to hold her front-camera phone at arm's length outside the image; that camera-bearing shoulder sits a little higher. Her free hand rests low on the duvet outside the main crop. The pose must allow a very small head lift and facial reaction without a cut.
+
+FRAME ZERO
+She has only just noticed something and looks toward the lens. Her lips are naturally slightly parted; her eyebrows remain mostly relaxed. Show the first hint of curiosity, not widened eyes, a smile, laughter or completed shock. Leave the reaction available for the animation.
+
+SETTING AND CAMERA
+Include ordinary creased bedding, mismatched pillows, a charging cable, bedside clutter and subtle warm or purple LED spill. Use a close upper-body 9:16 front-camera selfie from the phone she holds above the mattress, slightly crooked and off-centre like an unplanned paused social clip. Keep plain clothing or bedding available in the lower third for a caption. The phone remains outside its own image; no other camera or person is present.
+
+REALISM
+Preserve uneven skin tone, under-eye texture, flyaways, clothing texture, compressed fabric and mild lighting imbalance. The room should look affordable, personal and genuinely used. Background objects are coherent but incidental and a little soft. This is an imperfect real-life frame, not a polished portrait.
+
+AVOID
+No glamour pose, staged bed shoot, luxury bedroom, sexualized styling, beauty filter, smooth or plastic skin, perfect symmetry, studio lighting, artificial bokeh, shortened hair, theatrical reaction, hands near the face, malformed anatomy, visible recording equipment, text, caption, logo or watermark.
+
+OUTPUT
+Return exactly one photorealistic 9:16 image. No collage or alternatives.

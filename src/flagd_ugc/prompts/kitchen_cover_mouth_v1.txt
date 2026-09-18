@@ -1,0 +1,22 @@
+TASK
+Create frame zero of a casual vertical social video using the supplied master photo as the sole identity reference. The still begins a continuous three-second behavioral hook: crossing an ordinary kitchen, she notices something off camera, freezes and lightly covers her mouth in disbelief.
+
+IDENTITY LOCK — HIGHEST PRIORITY
+Show the same woman as the master reference. Preserve her facial structure, proportions, eye shape and colour, eyebrows, nose, lips, jawline, hairline, skin tone, natural asymmetry, pores, freckles, blemishes and marks. Preserve her exact hair colour, long length and texture. Do not beautify, idealize, average or reinterpret her identity. Clothing is not part of her identity and may change between videos.
+
+MID-ACTION FRAME ZERO
+She is crossing a modest lived-in kitchen in $wardrobe and faded straight-leg jeans while filming herself. One arm holds her front-camera phone outside its own image at a casual arm's-length angle. Her free hand hangs loosely at modest scale and has a short unobstructed path toward her mouth. That free hand is not yet raised.
+
+She has only just noticed something a little past the lens. Her attention is beginning to shift, one eyebrow is starting to lift and her lips stay naturally closed. Do not show the stop, wide-eyed shock or hand-over-mouth payoff yet.
+
+SETTING AND CAMERA
+Use the 9:16 front-camera selfie from the phone she holds herself around chest height. Frame her from head to waist. Include slightly worn cabinets, a dish towel, a few items on the counter and ordinary mixed daylight and ceiling light. The viewpoint is mildly crooked and off-centre from her walking grip. The phone stays outside its own image and nobody else is filming her.
+
+REALISM
+Make this feel like an accidental paused social-video frame. Preserve skin texture, under-eye detail, flyaways, fabric wrinkles, cabinet wear, slight exposure imbalance, restrained phone sharpening and minor compositional awkwardness. Keep coherent feet, floor contact, hand anatomy and kitchen geometry.
+
+AVOID
+No free hand already at face, completed shock, open mouth, screaming, glamour walk, model posture, luxury kitchen, pristine styling, dramatic cinematic light, ring light, beauty filter, plastic skin, shortened hair, oversized free hand, giant foreground camera arm, visible phone, photographer viewpoint, malformed fingers, extra limbs, text, captions, logos or watermark.
+
+OUTPUT
+Return exactly one photorealistic 9:16 image. No collage or alternatives.

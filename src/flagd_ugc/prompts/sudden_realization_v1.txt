@@ -1,0 +1,25 @@
+TASK
+Create frame zero of a casual vertical front-camera video using the supplied master photo as the sole identity reference. The resulting still must be ready to animate into a complete three-second "sudden realization" reaction.
+
+IDENTITY LOCK — HIGHEST PRIORITY
+Show the same woman as the master reference. Preserve her facial structure, proportions, eye shape and colour, eyebrows, nose, lips, jawline, hairline, skin tone, natural asymmetry, visible skin texture, freckles and marks. Preserve her hair colour, length and texture; some hair may be naturally tucked into the hoodie, but do not shorten or redesign it. Do not beautify, idealize, average or reinterpret her identity.
+
+FRAME-ZERO PERFORMANCE
+This is the instant immediately before the reaction, not the peak reaction. She has just noticed something. Her eyes are directed at the front camera, her lips are naturally slightly parted and her eyebrows are still mostly relaxed. Her expression contains only the first hint of curiosity. Do not show widened eyes, a completed smile, laughter, shock or a hand covering her mouth yet.
+
+Her posture is casually imperfect: seated with a mild natural slouch, one shoulder slightly lower, and her head almost—but not mechanically—straight. Her hands remain low and outside the important facial area. The pose must support this following three-second motion without a cut: eyes widen slightly, eyebrows lift, she leans a little closer, then forms a restrained disbelieving half-smile and settles.
+
+SETTING AND CLOTHING
+She is wearing a slightly oversized, well-used charcoal-grey hoodie with realistic folds and minor lint. She is seated in an ordinary lived-in bedroom. Include an imperfectly made bed, ordinary bedding, a basic bedside surface, a charging cable, a few clothes or everyday belongings, and subtle warm or purple LED ambience. The room must feel affordable, personal and genuinely used—not dirty, luxurious, professionally styled or deliberately staged.
+
+CAMERA
+9:16 vertical smartphone front-camera frame, waist-up, phone propped close to eye level and very slightly off-centre. Natural front-camera perspective with mild wide-angle characteristics. Her face sits in the upper-middle of the frame. Keep the lower part of the hoodie relatively uncluttered so a hook caption can be added later. The phone itself is not visible.
+
+REALISM
+Make this look like a paused frame from an ordinary person's real social video. Preserve pores, uneven skin tone, under-eye texture, small blemishes, flyaway hairs, clothing lint and normal facial asymmetry. Use mixed window and room light, slightly imperfect white balance, restrained smartphone sharpening and subtle sensor texture. Background details should be coherent but not unnaturally crisp.
+
+AVOID
+No completed reaction, theatrical acting, glamour pose, influencer bedroom, perfect décor, ring light, studio or cinematic lighting, beauty filter, skin smoothing, plastic skin, reshaped face, shortened hair, enlarged eyes, extreme symmetry, heavy makeup, artificial bokeh, HDR appearance, visible phone, hands near or across the face, malformed anatomy, extra fingers, duplicate objects, text, captions, logos or watermark.
+
+OUTPUT
+Return exactly one photorealistic 9:16 image. No collage and no alternatives inside the image.

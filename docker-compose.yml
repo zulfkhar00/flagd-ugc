@@ -9,7 +9,13 @@ services:
     command: ["sleep", "infinity"]
     environment:
       DATA_DIR: /data
-      TZ: Europe/London
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      FAL_KEY: ${FAL_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      TIMEZONE: ${TIMEZONE:-Europe/London}
+      RUN_TIME: ${RUN_TIME:-06:00}
+      TZ: ${TIMEZONE:-Europe/London}
     volumes:
       - flagd-ugc-data:/data
     healthcheck:
@@ -21,3 +27,4 @@ services:
 
 volumes:
   flagd-ugc-data:
+    name: flagd-ugc-data

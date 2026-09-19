@@ -3,10 +3,7 @@ services:
     build: .
     restart: unless-stopped
     init: true
-    # Keep the first Dokploy deployment inert while preflight and a no-delivery
-    # batch are run from its console. Change this to ["flagd-ugc", "daemon"]
-    # only after the complete batch and Telegram delivery have been approved.
-    command: ["sleep", "infinity"]
+    command: ["flagd-ugc", "daemon"]
     environment:
       DATA_DIR: /data
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

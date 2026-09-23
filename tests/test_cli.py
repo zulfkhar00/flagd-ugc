@@ -118,6 +118,23 @@ def test_hook_video_help_exposes_no_charge_resume(capsys):
     assert "--resume" in capsys.readouterr().out
 
 
+def test_animation_lab_accepts_explicit_kling_tier():
+    args = cli._parser().parse_args(
+        [
+            "animation-lab",
+            "--image",
+            "opening.jpg",
+            "--motion-prompt-file",
+            "motion.txt",
+            "--kling-tier",
+            "pro",
+            "--confirm-paid",
+        ]
+    )
+
+    assert args.kling_tier == "pro"
+
+
 def test_hook_video_lab_proxy_preflight_aborts_before_generation(
     tmp_path, monkeypatch
 ):

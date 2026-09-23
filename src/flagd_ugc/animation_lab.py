@@ -24,7 +24,18 @@ from .fal_provider import FalJob
 from .media import extract_review_frames, require_media_tools, validate_vertical_asset
 
 
-FAL_KLING_AUDIO_OFF_COST_PER_SECOND = 0.084
+FAL_KLING_AUDIO_OFF_COST_PER_SECOND = {
+    "standard": 0.084,
+    "pro": 0.112,
+}
+
+
+def kling_tier(model: str) -> str:
+    parts = model.strip("/").split("/")
+    for tier in FAL_KLING_AUDIO_OFF_COST_PER_SECOND:
+        if tier in parts:
+            return tier
+    return "standard"
 
 
 @dataclass(frozen=True)
@@ -138,7 +149,11 @@ class AnimationLab:
             raise ValueError("duration must be between 3 and 15 seconds")
 
         now = datetime.now(UTC)
-        run_id = f"{now.strftime('%Y%m%d-%H%M%S')}-kling-v3-{uuid4().hex[:6]}"
+        tier = kling_tier(str(self.provider.model))
+        run_id = (
+            f"{now.strftime('%Y%m%d-%H%M%S')}-kling-v3-{tier}-"
+            f"{uuid4().hex[:6]}"
+        )
         run_dir = output_root.expanduser().resolve() / run_id
         run_dir.mkdir(parents=True, exist_ok=False)
         input_name = f"input{source.suffix.lower()}"
@@ -168,7 +183,7 @@ class AnimationLab:
             "duration_seconds": duration,
             "generate_audio": False,
             "estimated_cost_usd": round(
-                duration * FAL_KLING_AUDIO_OFF_COST_PER_SECOND, 3
+                duration * FAL_KLING_AUDIO_OFF_COST_PER_SECOND[tier], 3
             ),
             "request": None,
             "last_queue_status": None,

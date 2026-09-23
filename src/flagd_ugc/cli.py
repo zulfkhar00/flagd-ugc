@@ -268,6 +268,11 @@ def _parser() -> argparse.ArgumentParser:
         "--duration", type=int, choices=range(3, 16), default=3
     )
     animation_lab.add_argument(
+        "--kling-tier",
+        choices=("standard", "pro"),
+        help="override FAL_KLING_MODEL for a controlled Standard/Pro comparison",
+    )
+    animation_lab.add_argument(
         "--output-dir", type=Path, default=Path("animation-lab-output")
     )
     animation_lab.add_argument(
@@ -814,6 +819,10 @@ def main(argv: list[str] | None = None) -> int:
                     raise PipelineError(
                         "--resume uses its saved prompt; omit --visual-hook"
                     )
+                if args.kling_tier is not None:
+                    raise PipelineError(
+                        "--resume uses its saved fal request; omit --kling-tier"
+                    )
             else:
                 if not args.confirm_paid:
                     raise PipelineError(
@@ -835,9 +844,15 @@ def main(argv: list[str] | None = None) -> int:
                     )
             if not settings.fal_api_key:
                 raise PipelineError("missing secret: FAL_KEY")
+            kling_model = settings.fal_kling_model
+            if args.resume is None and args.kling_tier is not None:
+                kling_model = (
+                    "fal-ai/kling-video/v3/"
+                    f"{args.kling_tier}/image-to-video"
+                )
             provider = FalKlingProvider(
                 settings.fal_api_key,
-                model=settings.fal_kling_model,
+                model=kling_model,
                 request_timeout=settings.request_timeout_seconds,
                 poll_seconds=settings.fal_poll_seconds,
                 initial_poll_delay=settings.fal_initial_poll_delay_seconds,

@@ -118,6 +118,26 @@ def test_animation_lab_passes_hand_entry_guardrail(tmp_path, media_checks):
     assert manifest["allow_hand_entry"] is True
 
 
+def test_animation_lab_records_pro_tier_and_cost(tmp_path, media_checks):
+    image = tmp_path / "generated-01.png"
+    image.write_bytes(b"image")
+
+    class ProProvider(FakeProvider):
+        model = "fal-ai/kling-video/v3/pro/image-to-video"
+
+    result = AnimationLab(ProProvider()).run(
+        image=image,
+        motion_prompt="small natural reaction",
+        output_root=tmp_path / "animations",
+        duration=4,
+    )
+
+    manifest = json.loads(result.manifest_path.read_text())
+    assert "kling-v3-pro" in result.run_dir.name
+    assert manifest["model"] == ProProvider.model
+    assert manifest["estimated_cost_usd"] == 0.448
+
+
 def test_animation_lab_resume_never_submits_again(tmp_path, media_checks):
     image = tmp_path / "generated-01.png"
     image.write_bytes(b"image")

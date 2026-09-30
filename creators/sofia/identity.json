@@ -1,0 +1,19 @@
+{
+  "creator_id": "creator-03",
+  "name": "Sofia",
+  "sex": "female",
+  "age": 28,
+  "nationality": "American",
+  "proposed_background": "Mexican American",
+  "hair": "long straight dark hair with a center part",
+  "source": "/Users/zulfkhar/Downloads/sofia.jpg",
+  "master_file": "master-selected-v1.jpg",
+  "master_sha256": "c2bb42d0702d4c893a0c5c5530f6a60169a21bafa493af956d92e9854acc83b3",
+  "dimensions": {
+    "pixelWidth": 896,
+    "pixelHeight": 1200
+  },
+  "status": "selected_master",
+  "production_enabled": false,
+  "profile_details": "Proposed fictional character details, not inferred from the photograph."
+}

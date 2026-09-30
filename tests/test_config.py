@@ -8,6 +8,16 @@ def test_default_text_model_uses_current_gemini_flash(monkeypatch):
     assert Settings.from_env().gemini_text_model == "gemini-3.6-flash"
 
 
+def test_default_schedule_uses_california_time(monkeypatch):
+    monkeypatch.delenv("TIMEZONE", raising=False)
+    monkeypatch.delenv("RUN_TIME", raising=False)
+
+    settings = Settings.from_env()
+
+    assert settings.timezone == "America/Los_Angeles"
+    assert settings.run_time == "08:00"
+
+
 def test_retired_text_model_setting_is_migrated(monkeypatch):
     monkeypatch.setenv("GEMINI_TEXT_MODEL", "gemini-2.5-flash")
 

@@ -180,7 +180,9 @@ class Pipeline:
                     lambda: self.gemini.generate_hooks(chosen, formats=formats),
                     retries=self.settings.transient_retries,
                 )
-                items = self._validate_assigned_hooks(items, assignments)
+                items = self._validate_assigned_hooks(
+                    items, assignments, run_date=run_date
+                )
                 rows = self.database.create_videos(batch_id, items)
                 self.database.complete_batch_stage(
                     batch_id,
@@ -210,7 +212,10 @@ class Pipeline:
 
     @staticmethod
     def _validate_assigned_hooks(
-        items: list[dict[str, str]], assignments: list[tuple[Demo, Any]]
+        items: list[dict[str, str]],
+        assignments: list[tuple[Demo, Any]],
+        *,
+        run_date: date | None = None,
     ) -> list[dict[str, str]]:
         """Defend the persisted boundary even when a provider implementation is replaced."""
         if len(items) != len(assignments):
@@ -256,7 +261,9 @@ class Pipeline:
             if title_key in seen_titles:
                 raise QualityError("generated batch repeated an upload title")
             seen_titles.add(title_key)
-            direction = direction_for_hook_format(hook_format)
+            direction = direction_for_hook_format(
+                hook_format, rotation=run_date.toordinal() if run_date else 0
+            )
             validated.append(
                 {
                     "demo_path": demo_path,
@@ -435,7 +442,19 @@ class Pipeline:
                     if stage is not None and stage["status"] == "running":
                         attempts = max(0, attempts - 1)
                     if attempts >= self.settings.quality_retries + 1:
-                        raise QualityError("animation exhausted its quality retries")
+                        rejected = (
+                            stage
+                            if stage is not None and stage["status"] == "failed"
+                            else review
+                        )
+                        reason = rejected["error"] if rejected is not None else None
+                        message = (
+                            "animation exhausted its quality retries "
+                            f"({attempts} attempts)"
+                        )
+                        if reason:
+                            message += f". Last rejection: {reason}"
+                        raise QualityError(message)
                     self.database.start_video_stage(
                         video_id, "animation", clear_metadata=True
                     )
@@ -498,8 +517,32 @@ class Pipeline:
                     retries=self.settings.transient_retries,
                 )
             except QualityError as exc:
+                # Retain every review reason instead of replacing it on each retry.
+                # The next paid attempt still uses the normal quality budget.
+                previous = (
+                    json.loads(review["metadata_json"])
+                    if review is not None and review["metadata_json"]
+                    else {}
+                )
+                rejections = list(previous.get("rejections", []))
+                animation = self.database.get_video_stage(video_id, "animation")
+                attempt = int(animation["attempts"]) if animation else 0
+                rejections.append({"animation_attempt": attempt, "reason": str(exc)})
+                self.database.update_video_stage_metadata(
+                    video_id, "animation_review", {"rejections": rejections}
+                )
+                LOGGER.warning(
+                    "video %s animation attempt %s rejected: %s",
+                    video["ordinal"],
+                    attempt,
+                    exc,
+                )
                 self.database.fail_video_stage(video_id, "animation_review", str(exc))
                 continue
+            if review is not None and review["metadata_json"]:
+                rejections = json.loads(review["metadata_json"]).get("rejections")
+                if rejections:
+                    result = {**result, "rejections": rejections}
             self.database.complete_video_stage(
                 video_id, "animation_review", output_path=existing, metadata=result
             )
@@ -686,7 +729,7 @@ class Pipeline:
             results: list[tuple[Any, Path | None, str | None]] = []
             self.database.renew_lease(lease_key, owner, lease_ttl)
             # Process sequentially because the managed HTTPS proxy blocks bursts of
-            # concurrent fal POST/poll requests. The 06:00–08:00 production window
+            # concurrent fal POST/poll requests. The 08:00–10:00 California production window
             # comfortably accommodates four sequential three-second renders.
             for video in videos:
                 self.database.renew_lease(lease_key, owner, lease_ttl)

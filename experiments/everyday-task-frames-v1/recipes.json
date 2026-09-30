@@ -1,0 +1,42 @@
+[
+  {
+    "key": "open-fridge",
+    "label": "Opening the refrigerator",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone recording. Use the supplied master photo only to preserve the same woman's identity, face and long dark-blonde hair. In a normal contemporary American apartment kitchen, she is already opening a stainless refrigerator with her free hand; the door is partway open and she leans slightly toward the shelves as if checking what is inside. Her eyes are on the refrigerator, expression relaxed and neutral. She wears an ordinary muted blue T-shirt. Include a partial view of simple cabinets and a few familiar fridge items, without arranging them neatly for display. Natural household light and ordinary phone exposure; candid off-center crop, not a portrait."
+  },
+  {
+    "key": "mug-into-sink",
+    "label": "Putting a mug in the sink",
+    "prompt": "Create one realistic vertical 9:16 frame from her own front-camera phone video, preserving the same woman's identity and long dark-blonde hair from the master reference. She is in a normal U.S. apartment kitchen, already lowering a used ceramic mug into the sink with her free hand. Her arm reaches across the near foreground and her torso angles toward the sink; her attention stays on placing the mug, with a quiet neutral face. She wears a plain burgundy long-sleeve top. Show incidental sink details such as dish soap, a sponge and one ordinary dish, plus partial simple cabinets. Lived-in but clean, normal room lighting, casually cropped phone framing."
+  },
+  {
+    "key": "wipe-counter",
+    "label": "Wiping the counter",
+    "prompt": "Create one believable 9:16 paused frame from a casual live front-camera phone recording, using the supplied master image solely to preserve the same woman's identity and long dark-blonde hair. In a contemporary American apartment kitchen, she is mid-wipe across a small area of the counter with a dishcloth in her free hand. The cloth and moving forearm are visible in the foreground; her upper body leans toward the task and her gaze is on the counter. Keep her mouth relaxed and expression ordinary. She wears a simple gray sweatshirt. Show only partial cabinets, a paper towel roll and a mug. Normal household light, natural phone perspective, imperfectly cropped and not posed."
+  },
+  {
+    "key": "pull-from-cabinet",
+    "label": "Reaching into an upper cabinet",
+    "prompt": "Create a realistic vertical 9:16 frame from the front camera of a phone she is holding herself. Preserve the same woman, facial features and long dark-blonde hair from the master reference. She is in a normal contemporary U.S. apartment kitchen, already reaching into an open upper cabinet with her free hand to take down an everyday bowl. Her raised arm occupies part of the frame; her body stretches slightly and turns toward the cabinet, and she looks at the shelf rather than presenting to the camera. Neutral, unperformed face. She wears an ordinary green cotton shirt. Include partial simple cabinetry and a glimpse of the counter. Practical household light, casual handheld crop, not a polished portrait."
+  },
+  {
+    "key": "plug-in-charger",
+    "label": "Plugging a charger into a phone on the counter",
+    "prompt": "Create a realistic 9:16 paused frame from a casual front-camera phone video, preserving the same woman's identity and long dark-blonde hair from the supplied master. In a normal American apartment kitchen, a separate everyday smartphone lies on the counter while she is already plugging a charging cable into it with her free hand. The cable connector is close to the port and her fingers are engaged in the small task. Her attention is on the connection, face neutral. She wears a plain navy long-sleeve shirt. The phone filming her is the front camera and stays outside the image; only the separate phone on the counter is visible. Show partial cabinets and an ordinary mug. Candid off-center framing and normal indoor light, no mirror or other people."
+  },
+  {
+    "key": "fold-hoodie-sleeve",
+    "label": "Folding a hoodie sleeve",
+    "prompt": "Create one natural-looking 9:16 frame from the live front camera of the phone the supplied woman is holding herself. Keep her identity and long dark-blonde hair consistent with the master reference. She is in an ordinary contemporary American home, beside a living-room sofa, using her free hand to fold the cuff of her hoodie sleeve once. Capture the small adjustment in progress, with her hands near the lower foreground, torso slightly turned, and eyes briefly attending to the cuff. Her face remains neutral and incidental. She wears a simple charcoal hoodie and jeans. Include a partial sofa and an everyday throw blanket, without a styled interior look. Normal room light, casual close phone crop, not a posed portrait."
+  },
+  {
+    "key": "move-grocery-bag",
+    "label": "Moving groceries on the counter",
+    "prompt": "Create a realistic vertical 9:16 image from a casual front-camera phone recording, using the master photo only for the same woman's identity and long dark-blonde hair. In a normal U.S. apartment kitchen, she is already moving a reusable grocery bag a short distance across the counter with her free hand. The bag handle is in her fingers and a few ordinary groceries are visible near the opening; her arm crosses the frame and her body angles toward the counter. She is focused on the bag with a relaxed neutral face. She wears an ordinary cream-colored sweatshirt. Show partial contemporary cabinets, a refrigerator edge and a mug. Natural household light and believable phone exposure, imperfect casual crop."
+  },
+  {
+    "key": "pick-up-keys",
+    "label": "Picking up keys by the entry",
+    "prompt": "Create one candid vertical 9:16 frame from the front camera of a phone the supplied woman is holding herself. Preserve her recognizable identity, facial features and long dark-blonde hair. She is in the entry area of a normal contemporary American apartment, already reaching with her free hand to pick up a small set of keys from a simple console table. Her upper body leans toward the table and her gaze follows her hand; her face stays relaxed and unperformed. She wears an ordinary olive sweatshirt. In the background, casually cropped, show a standard interior door, a coat on a hook and a pair of everyday sneakers. Normal home lighting, realistic phone framing, no mirror or other person."
+  }
+]

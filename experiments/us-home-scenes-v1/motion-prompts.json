@@ -1,0 +1,18 @@
+[
+  {
+    "key": "laundry-area",
+    "prompt": "One continuous four-second front-camera phone selfie. Continue from the supplied starting frame and preserve the same woman, face, hair, clothing, laundry room and background throughout. She glances briefly toward the laundry basket, blinks naturally, then looks back toward the lens as a small private smile begins and eases. Her shoulders make one slight settling movement and her breathing causes subtle natural movement; do not hold a frozen expression. The phone is in her own outstretched hand: a small unsynchronized wrist drift and grip correction gently shift the crop and angle, so the washer and shelf move slightly in perspective while she moves her head. Keep the movement irregular and restrained, like a casual recording. No speech or mouthing words, no large reaction, no cuts, zoom, gimbal movement or sudden camera shake."
+  },
+  {
+    "key": "kitchen-counter",
+    "prompt": "One continuous four-second front-camera phone selfie. Continue from the supplied starting frame and preserve the same woman, face, hair, clothing, kitchen and background throughout. She looks briefly toward something on the counter just beside the phone, blinks, then returns her gaze to the lens. Her lips press together for a moment as if suppressing a laugh; one cheek lifts slightly before her face relaxes. Add a tiny shoulder shift and natural breathing so her expression does not stay posed. She holds the phone herself: a small wrist adjustment, slightly out of sync with her head movement, gently changes the framing and shifts the cabinets and refrigerator in perspective. Keep it relaxed and subtle, with ordinary real-time movement. No speech or mouthing words, broad grin, dramatic reaction, cuts, zoom or abrupt camera motion."
+  },
+  {
+    "key": "bedroom-bed-edge",
+    "prompt": "One continuous four-second front-camera phone selfie. Continue from the supplied starting frame and preserve the same woman, face, hair, clothing, bedroom and background throughout. She lowers her eyes briefly, blinks once, then looks toward the lens with a slight questioning eyebrow lift that settles into a faint, natural half-smile. Her head makes a small adjustment and her shoulders settle as she breathes; let the expression change gently rather than remain fixed. She holds the phone herself at arm's length. A subtle wrist drift and grip correction create mild handheld sway and a small change in tilt, moving the blinds and nightstand slightly in perspective independently of her facial movement. No speaking or lip-sync, no theatrical reaction, cuts, zoom, gimbal motion or sudden shake."
+  },
+  {
+    "key": "living-room-sofa",
+    "prompt": "One continuous four-second front-camera phone selfie. Continue from the supplied starting frame and preserve the same woman, face, hair, clothing, living room and background throughout. She glances off toward the coffee table or TV for a moment, blinks naturally, then looks back at the phone with a restrained, amused expression that softens instead of freezing in place. Her head tilts slightly and she shifts her weight against the sofa, creating a small shoulder movement. She holds the phone herself; a mild wrist correction and gentle hand drift alter the crop and tilt separately from her head movement, causing the lamp and sofa background to shift subtly in perspective. Keep it like ordinary handheld home video, calm and unperformed. No speech, no mouthing words, no broad grin, dramatic reaction, cuts, zoom or abrupt camera movement."
+  }
+]

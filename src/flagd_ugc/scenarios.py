@@ -4,7 +4,15 @@ from dataclasses import dataclass
 from importlib.resources import files
 from string import Template
 
-from .camera_style import with_handheld_motion, with_handheld_scene
+from .camera_style import (
+    US_BEDROOM_SETTING_INSTRUCTION,
+    US_ENTRYWAY_SETTING_INSTRUCTION,
+    US_KITCHEN_SETTING_INSTRUCTION,
+    US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION,
+    US_STREET_SETTING_INSTRUCTION,
+    with_handheld_motion,
+    with_handheld_scene,
+)
 from .wardrobes import get_wardrobe
 
 
@@ -25,8 +33,17 @@ class ScenarioDefinition:
             .read_text(encoding="utf-8")
         )
         selected = get_wardrobe(wardrobe or self.default_wardrobe)
+        prompt = Template(source).substitute(wardrobe=selected.prompt)
+        if self.key in {"bedroom-seated", "bed-reclined", "bed-facepalm"}:
+            prompt = f"{prompt.rstrip()}\n\n{US_BEDROOM_SETTING_INSTRUCTION}"
+        if self.key == "kitchen-cover-mouth":
+            prompt = f"{prompt.rstrip()}\n\n{US_KITCHEN_SETTING_INSTRUCTION}"
+        if self.key == "doorway-backout":
+            prompt = f"{prompt.rstrip()}\n\n{US_ENTRYWAY_SETTING_INSTRUCTION}"
+        if self.key == "city-walk":
+            prompt = f"{prompt.rstrip()}\n\n{US_STREET_SETTING_INSTRUCTION}"
         return with_handheld_scene(
-            Template(source).substitute(wardrobe=selected.prompt)
+            f"{prompt.rstrip()}\n\n{US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION}"
         )
 
     def motion_prompt(self) -> str:

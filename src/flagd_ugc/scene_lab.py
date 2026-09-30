@@ -13,6 +13,13 @@ from uuid import uuid4
 from .errors import AssetError, QualityError
 from .media import validate_vertical_asset
 from .retry import retry_transient
+from .camera_style import (
+    US_BEDROOM_SETTING_INSTRUCTION,
+    US_ENTRYWAY_SETTING_INSTRUCTION,
+    US_KITCHEN_SETTING_INSTRUCTION,
+    US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION,
+    US_STREET_SETTING_INSTRUCTION,
+)
 from .scenarios import DEFAULT_SCENARIO, get_scenario
 from .wardrobes import get_wardrobe
 
@@ -107,6 +114,28 @@ class SceneLab:
         scene_prompt = (
             prompt or scenario_definition.scene_prompt(wardrobe_definition.key)
         ).strip()
+        if prompt is not None:
+            scene_prompt = (
+                f"{scene_prompt}\n\n{US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION}"
+            )
+            if scenario_definition.key in {
+                "bedroom-seated", "bed-reclined", "bed-facepalm"
+            }:
+                scene_prompt = (
+                    f"{scene_prompt}\n\n{US_BEDROOM_SETTING_INSTRUCTION}"
+                )
+            if scenario_definition.key == "kitchen-cover-mouth":
+                scene_prompt = (
+                    f"{scene_prompt}\n\n{US_KITCHEN_SETTING_INSTRUCTION}"
+                )
+            if scenario_definition.key == "doorway-backout":
+                scene_prompt = (
+                    f"{scene_prompt}\n\n{US_ENTRYWAY_SETTING_INSTRUCTION}"
+                )
+            if scenario_definition.key == "city-walk":
+                scene_prompt = (
+                    f"{scene_prompt}\n\n{US_STREET_SETTING_INSTRUCTION}"
+                )
         animation_prompt = (
             motion_prompt or scenario_definition.motion_prompt()
         ).strip()

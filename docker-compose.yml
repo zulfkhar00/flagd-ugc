@@ -10,9 +10,9 @@ services:
       FAL_KEY: ${FAL_KEY:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
-      TIMEZONE: ${TIMEZONE:-Europe/London}
-      RUN_TIME: ${RUN_TIME:-06:00}
-      TZ: ${TIMEZONE:-Europe/London}
+      TIMEZONE: ${TIMEZONE:-America/Los_Angeles}
+      RUN_TIME: ${RUN_TIME:-08:00}
+      TZ: ${TIMEZONE:-America/Los_Angeles}
     volumes:
       - flagd-ugc-data:/data
     healthcheck:

@@ -1,0 +1,7 @@
+This is a random three-second excerpt from a longer casual front-camera recording. Nothing noteworthy happens beyond the small everyday task already underway.
+
+Her face orientation remains essentially unchanged throughout. Her attention stays primarily on the task she is performing. Her eyes make only tiny incidental adjustments around the task; do not make her repeatedly look toward the camera. If her eyes briefly pass near the lens, it is accidental and lasts only a moment before her attention naturally returns to the task. One ordinary blink may occur. Her face stays emotionally neutral and her mouth remains relaxed, with no speech or reaction.
+
+Continue only the task already underway in the starting frame: $task_continuation Keep the movement slight and unperformed. Her body movement physically follows the task with a small torso weight shift, shoulder and arm movement, and corresponding subtle hair or clothing movement. The phone hand drifts minimally with irregular natural wrist movement, causing tiny changes in framing and background perspective. Task movement and phone drift stay independent; do not choreograph them as a sequence.
+
+No smile, smirk, frown, deliberate head turn, repeated look-to-camera beat, completed task, new gesture or ending pose. The clip stops in the middle of the ordinary moment.

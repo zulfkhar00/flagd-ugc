@@ -15,74 +15,53 @@ WARDROBES = {
     for item in (
         WardrobeDefinition(
             key="charcoal-hoodie",
-            label="Worn charcoal hoodie",
-            prompt=(
-                "a slightly oversized, well-used charcoal-grey pullover hoodie with "
-                "natural bunching, minor lint and no visible branding"
-            ),
+            label="Charcoal hoodie",
+            prompt="an ordinary charcoal-grey pullover hoodie with no visible branding",
         ),
         WardrobeDefinition(
             key="washed-navy-tee",
-            label="Loose washed navy T-shirt",
-            prompt=(
-                "a loose washed-navy crew-neck T-shirt with a slightly stretched collar, "
-                "soft wrinkles and no visible branding"
-            ),
+            label="Navy T-shirt",
+            prompt="an ordinary navy crew-neck T-shirt with no visible branding",
         ),
         WardrobeDefinition(
             key="forest-sweatshirt",
-            label="Faded forest sweatshirt",
-            prompt=(
-                "a faded forest-green crew-neck sweatshirt with soft pilling, uneven folds "
-                "and no visible branding"
-            ),
+            label="Forest-green sweatshirt",
+            prompt="an ordinary forest-green crew-neck sweatshirt with no visible branding",
         ),
         WardrobeDefinition(
             key="olive-street-layers",
             label="Olive jacket and cream T-shirt",
             prompt=(
-                "a lightweight dark-olive utility jacket worn open over a faded off-white "
-                "crew-neck T-shirt, both ordinary, slightly creased and unbranded"
+                "an ordinary olive utility jacket worn open over an off-white crew-neck "
+                "T-shirt, with no visible branding"
             ),
         ),
         WardrobeDefinition(
             key="cream-knit",
-            label="Relaxed cream knit",
-            prompt=(
-                "a relaxed oatmeal-cream knit jumper with subtle pilling, slightly uneven "
-                "cuffs and no visible branding"
-            ),
+            label="Cream knit sweater",
+            prompt="an ordinary cream knit sweater with no visible branding",
         ),
         WardrobeDefinition(
             key="burgundy-long-sleeve",
-            label="Faded burgundy long-sleeve",
-            prompt=(
-                "a faded burgundy cotton long-sleeve top with slightly stretched cuffs, "
-                "ordinary wrinkles and no visible branding"
-            ),
+            label="Burgundy long-sleeve top",
+            prompt="an ordinary burgundy cotton long-sleeve top with no visible branding",
         ),
         WardrobeDefinition(
             key="heather-lilac-tee",
-            label="Washed lilac T-shirt",
-            prompt=(
-                "a loose heather-lilac crew-neck T-shirt with a slightly worn collar, "
-                "ordinary wrinkles and no visible branding"
-            ),
+            label="Lilac T-shirt",
+            prompt="an ordinary heather-lilac crew-neck T-shirt with no visible branding",
         ),
         WardrobeDefinition(
             key="black-zip-hoodie",
-            label="Faded black zip hoodie",
-            prompt=(
-                "a faded black zip hoodie worn open over a plain off-white vest, with "
-                "soft pilling, uneven folds and no visible branding"
-            ),
+            label="Black zip hoodie",
+            prompt="an ordinary black zip hoodie worn open over a plain off-white top, with no visible branding",
         ),
         WardrobeDefinition(
             key="rust-striped-tee",
             label="Muted rust striped T-shirt",
             prompt=(
-                "a relaxed muted-rust T-shirt with thin faded cream stripes, a softly "
-                "stretched collar, natural creases and no visible branding"
+                "an ordinary muted-rust T-shirt with thin cream stripes and no visible "
+                "branding"
             ),
         ),
     )

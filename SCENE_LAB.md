@@ -100,22 +100,26 @@ of four candidates pass every hard gate:
 
 - unmistakably the same identity as the master;
 - ordinary phone-video realism, without polished AI or influencer styling;
-- true frame zero—the reaction has not already peaked;
-- pose can complete the paired movement within three seconds;
+- the mundane task is already visibly underway;
+- gaze has a clear reason to remain on the task;
+- the body, hands and nearby object can continue that task naturally over three seconds;
 - coherent face, body, hands, clothing, and background;
-- face is clear and the lower clothing remains usable for a caption.
+- neutral expression with no added reaction beat;
+- face remains clear and the composition leaves room for caption text.
 
 Change only one prompt variable between experiments. Record what changed in a new prompt
 file and pass it with `--prompt-file`; use `--motion-prompt-file` for the paired animation
 instruction. Do not animate a candidate until its still prompt meets the three-of-four rule.
 
-Useful early variables to test independently are expression intensity, camera distance,
-background detail, and LED strength. Keep identity instructions, frame-zero timing, and the
-three-second motion path fixed while testing those variables.
+Useful early variables to test independently are action clarity, task-directed gaze, camera
+distance, and background detail. For everyday-task UGC, use the task-driven direction below
+and change only one scene variable at a time.
 
 ## What the still should communicate
 
-The image is not a completed reaction or a polished portrait. It is the first frame of a
-continuous performance: initial curiosity, followed by a small eye and eyebrow reaction, a
-slight lean and restrained half-smile, then a settle. Hands start low because large hand-face
-interactions are more likely to deform during image-to-video generation.
+For the current everyday-task direction, the image is a casual frame already in the middle of
+a mundane action, not a completed reaction or polished portrait. The person has a clear reason
+to move; her gaze belongs on the task. Her expression stays neutral. The body angle, free hand,
+and nearby object should make the action legible from the starting frame, with enough room for
+a small continuation over three seconds. See [TASK_DRIVEN_UGC_RULE.md](experiments/TASK_DRIVEN_UGC_RULE.md)
+for the reusable gaze, movement and benchmark guidance.

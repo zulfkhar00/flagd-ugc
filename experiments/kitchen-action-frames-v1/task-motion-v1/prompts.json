@@ -1,0 +1,22 @@
+[
+  {
+    "key": "lean-into-drawer",
+    "image": "../lean-into-drawer-replacement.png",
+    "action": "She continues the drawer task by only a few centimeters: her free hand shifts lightly among the utensils, and her weight settles a little while she remains leaned toward the open drawer. Do not have her retrieve or display an object."
+  },
+  {
+    "key": "adjust-coffee-maker",
+    "image": "../adjust-coffee-maker-replacement.png",
+    "action": "She continues the coffee-maker task with a tiny adjustment of her free fingertips at the control, then lets the hand rest there. Do not add a new gesture or have her turn toward the camera."
+  },
+  {
+    "key": "reach-for-mug",
+    "image": "../reach-for-mug.png",
+    "action": "She continues the reach toward the mug by only a few centimeters, keeping her attention on it. Do not have her pick it up or bring it toward the camera."
+  },
+  {
+    "key": "sit-at-island",
+    "image": "../sit-at-island-replacement.png",
+    "action": "She continues lowering onto the stool by just a few centimeters as her free hand lightly steadies against the counter. Keep the sit incomplete; do not have her settle into a finished pose."
+  }
+]

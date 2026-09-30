@@ -1,0 +1,26 @@
+Use case: identity-preserve.
+Asset type: a single photographic identity-reference master for later Nano Banana Pro scene generation.
+
+Input Image 1 is the identity reference. Preserve the same adult woman's facial identity,
+apparent adult age, skin tone, eye color and spacing, eyebrows, nose, lips, jawline, hairline
+and small defining facial marks. Preserve her long straight dark hair with its center part.
+Do not substitute another face or beautify her facial proportions.
+
+Create one photorealistic 3:4 head-and-shoulders photograph against a plain matte light-gray
+background. Frame her from just above the full crown to the upper chest. Her face is large
+and clearly readable, with both eyes and the complete facial outline visible. Her head is
+upright and frontal, her eyes look toward the camera, her shoulders are relaxed and her mouth
+is gently closed in a neutral expression. Use an eye-level camera with ordinary perspective
+and no obvious wide-angle selfie distortion. Hair falls naturally over her shoulders without
+covering her eyes or cheek contours. Wear an ordinary plain charcoal crew-neck T-shirt with
+no lettering. Remove the large hoop earrings; do not add other accessories.
+
+Replace the reference's direct-flash lighting with soft, even, neutral-colored light from
+near the camera. Keep normal facial shading, skin texture and the existing small facial marks.
+Maintain a believable ordinary photograph, without beauty filtering, artificial sharpening,
+plastic skin, exaggerated eyelashes, glamour retouching, rim light or cinematic grading.
+Do not invent extra freckles or amplify blemishes.
+
+The background contains no room details, furniture, scenery, color gradients or pattern.
+No hands, raised arm, phone, props, second person, captions, watermark graphic, logo or text.
+Deliver one portrait only, not a collage, contact sheet or multi-view character sheet.

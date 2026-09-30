@@ -1,0 +1,32 @@
+[
+  {
+    "key": "bedroom-make-bed",
+    "demo_id": "negative-date-feedback",
+    "hook": "i asked flagd what went wrong on that date",
+    "hook_format": "inner-thought"
+  },
+  {
+    "key": "entryway-tie-shoe",
+    "demo_id": "perfect-opener-attempt",
+    "hook": "pov: practicing my opener before the coffee date",
+    "hook_format": "pov"
+  },
+  {
+    "key": "living-room-fold-throw",
+    "demo_id": "text-date",
+    "hook": "when i need better things to say than hey",
+    "hook_format": "when"
+  },
+  {
+    "key": "laundry-fold-towel",
+    "demo_id": "positive-date-feedback",
+    "hook": "playful detail worked",
+    "hook_format": "direct-observation"
+  },
+  {
+    "key": "parked-car-seatbelt",
+    "demo_id": "progress-breakdown",
+    "hook": "rating the chat: 43/100",
+    "hook_format": "scorecard"
+  }
+]

@@ -12,7 +12,11 @@ from typing import Any
 import httpx
 
 from .assets import Demo
-from .camera_style import with_handheld_motion, with_handheld_scene
+from .camera_style import (
+    US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION,
+    with_handheld_motion,
+    with_handheld_scene,
+)
 from .errors import ProviderError, QualityError, TransientError
 from .hook_formats import HOOK_FORMATS, HookFormat, get_hook_format, visible_hook_text
 from .hooks import validate_hook, validate_title
@@ -337,6 +341,8 @@ for a caption that will be added later.
 Hook context: {hook}
 The following approved app demo shows: {demo_description}
 {direction_block}
+
+{US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION}
 """.strip())
         self.generate_image(
             prompt,

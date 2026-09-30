@@ -1,0 +1,32 @@
+[
+  {
+    "key": "close-casual",
+    "label": "Closer, slightly off-center",
+    "prompt": "Create one realistic 9:16 frame from the front camera of a phone she is holding herself. Use the supplied master photo only to preserve the same woman's identity, facial features, skin tone, eyes and long dark-blonde hair. She is in a normal contemporary American apartment kitchen. Show a partial glimpse of modern cabinets, counter and a stainless or black refrigerator; keep them incidental. The phone is held a little closer than a conventional selfie, with her face filling more of the frame and one shoulder cropped by the edge. She is looking just beside the lens, as if interrupted mid-thought, not presenting herself. She wears an ordinary black cotton T-shirt. Allow normal skin texture, mild facial asymmetry and a few naturally loose strands of hair. Use ordinary kitchen light with a slight exposure difference across her face. This is a casual phone-video frame, not a portrait. No beauty lighting, smoothing, text, mirror, visible phone or other people."
+  },
+  {
+    "key": "low-phone-shoulder",
+    "label": "Phone slightly low, raised shoulder",
+    "prompt": "Create one realistic 9:16 frame from her own front-camera phone video. Use the supplied master photo only to preserve the same woman's identity, face, eyes, skin tone and long dark-blonde hair. She is in a normal U.S. apartment kitchen with a glimpse of simple cabinets and part of a refrigerator. The phone is held about 5–10 cm below eye level; one shoulder is slightly raised from holding it, and a small part of her forearm naturally enters the lower edge. Her face sits off-center and she looks toward the phone screen just below the lens. One side of her hair is tucked behind her ear while the other falls naturally. She wears a plain navy crew-neck T-shirt. Use normal overhead kitchen lighting, with the phone capturing it as-is. Preserve natural skin texture and facial asymmetry. The crop feels casual and slightly unplanned, not posed or polished. No glamour lighting, skin smoothing, text, mirror, visible phone or other people."
+  },
+  {
+    "key": "window-side-light",
+    "label": "Uneven window light, closer shoulder crop",
+    "prompt": "Make one photorealistic 9:16 paused frame from a casual front-camera phone recording. Preserve the exact same synthetic woman's recognizable identity from the supplied master reference. In a contemporary American apartment kitchen, show only a soft partial view of the counter, upper cabinets and a paper towel roll or used mug. She holds the camera herself slightly above eye level and closer than arm's length; her face is turned a little rather than square to camera, and one shoulder is partly cut off. She wears an ordinary muted green sweatshirt. Window light from one side is a little brighter, while normal room light fills the other side; keep believable phone exposure and color. Her expression is neutral and unposed, gaze just past the lens. Hair falls naturally around her face without a styled, symmetrical shape. Keep ordinary skin texture. No studio look, beauty filter, perfect portrait composition, text, visible phone, mirror or other people."
+  },
+  {
+    "key": "leaning-counter",
+    "label": "Leaning lightly at counter",
+    "prompt": "Create one realistic vertical 9:16 frame from the front camera of the phone she holds herself. The supplied master image is the identity reference; keep the same woman and recognizable face, eyes, skin marks and long dark-blonde hair. She is in a normal contemporary U.S. apartment kitchen, lightly leaning one hip or forearm against the counter. Show a partial view of shaker-style cabinets, a countertop and a small kitchen appliance in the background. Her torso is angled slightly away while she glances toward the phone screen, not directly posing at the lens. The camera is close and held a little to one side; her near shoulder is larger from normal selfie perspective and partly cropped. She wears a simple heather-gray sweatshirt. A normal ceiling fixture lights the room, with one side of her face somewhat brighter from nearby window light. Keep natural skin and hair, not polished or distressed. No studio fill, text, mirror, visible phone or other people."
+  },
+  {
+    "key": "loose-tie-back",
+    "label": "Hair loosely tied back, imperfect angle",
+    "prompt": "Create one realistic 9:16 still from a casual front-camera phone recording. Preserve the same woman's identity and facial features from the supplied master photo. She is in a normal American apartment kitchen with a partial glimpse of cabinets, counter and a stainless or black refrigerator. Her long dark-blonde hair is gathered casually into a loose low ponytail, with some length visible over one shoulder and a few natural strands around her temples. She holds her phone slightly above and to one side; the angle is a little tilted, her face is not perfectly centered, and one shoulder is cut close to the frame. She wears an ordinary soft-blue cotton top. Her expression is relaxed and distracted, looking just to the side of the lens. Use ordinary kitchen lighting and natural phone exposure; retain normal skin texture and small facial asymmetries. No glam styling, smoothing, text, mirror, visible phone or other people."
+  },
+  {
+    "key": "mid-action-reach",
+    "label": "Mid-reach, closer handheld crop",
+    "prompt": "Create one realistic vertical 9:16 paused moment from a front-camera phone video she is recording herself in a contemporary American apartment kitchen. Use the supplied master photo only as identity reference and preserve the same woman, face, eyes and long dark-blonde hair. She is mid-reach toward something on the counter outside the frame, so her torso is turned slightly and one shoulder sits higher; her arm holding the phone makes a close, mildly awkward crop through the lower corner. Her face is near one side of the frame and her gaze is on the counter rather than presenting to the lens. She wears an ordinary charcoal zip hoodie over a simple T-shirt. Include only a few incidental kitchen cues: modern cabinet fronts, countertop and the edge of a mug or coffee maker. Light comes from ordinary ceiling fixtures with a small unevenness in phone exposure. Keep skin and hair natural, no deliberate mess or wear. No beauty lighting, text, mirror, visible phone or other people."
+  }
+]

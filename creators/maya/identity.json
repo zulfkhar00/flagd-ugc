@@ -1,0 +1,19 @@
+{
+  "creator_id": "creator-02",
+  "name": "Maya",
+  "sex": "female",
+  "age": 26,
+  "nationality": "American",
+  "proposed_background": "Black American",
+  "hair": "long defined dark curls with a center part",
+  "source": "/Users/zulfkhar/Downloads/maya.jpg",
+  "master_file": "master-selected-v1.jpg",
+  "master_sha256": "e06f42213d29953a9a8cf698ae16ab88dea97b7d79fee03cd17fd34e1e8942e0",
+  "dimensions": {
+    "pixelWidth": 896,
+    "pixelHeight": 1200
+  },
+  "status": "selected_master",
+  "production_enabled": false,
+  "profile_details": "Proposed fictional character details, not inferred from the photograph."
+}

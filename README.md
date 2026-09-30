@@ -4,16 +4,17 @@ A private, resumable Python 3.12 service that creates four 15-second vertical fl
 every day and delivers them to one Telegram chat. It does not post to social platforms and
 does not collect analytics.
 
-The daemon starts work at 06:00 `Europe/London`. Four videos are generated sequentially to
-avoid bursts through managed HTTPS proxies and can be reviewed in Telegram before 08:00.
+The daemon starts work at 08:00 `America/Los_Angeles`. Four videos are generated sequentially to
+avoid bursts through managed HTTPS proxies and can be reviewed in Telegram later that morning.
 
 ## Video format
 
 Each result contains:
 
 - 0–3 seconds: an approved synthetic character in a natural, handheld front-camera opening,
-  using a persisted format-specific setting, wardrobe and silent reaction; the truthful
-  on-camera-perspective hook is generated and safety-reviewed by Gemini;
+  doing a mundane task with task-focused gaze, a neutral face and posture that follows the
+  action; the task, wardrobe and truthful on-camera-perspective hook are persisted and
+  safety-reviewed before generation;
 - 3–15 seconds: the matching approved flagd demonstration;
 - no audio, so the uploader can select platform-native sound manually.
 
@@ -94,8 +95,9 @@ The approved rotation, copy grammars, score guardrail and caption layouts are do
 [HOOK_FORMATS.md](HOOK_FORMATS.md). `compose-lab --hook-format` renders any one of those layouts
 without paid providers or delivery.
 
-The daily pipeline uses the persisted self-shot setting, wardrobe, and reaction recipes in
-[OPENING_DIRECTIONS.md](OPENING_DIRECTIONS.md), rather than asking a model to invent them.
+The daily pipeline uses the persisted, date-rotated task and wardrobe recipes in
+[OPENING_DIRECTIONS.md](OPENING_DIRECTIONS.md). A task carries the opening; the character
+does not perform a separate reaction for the viewer.
 
 ### Local four-video batch preview
 
@@ -300,7 +302,8 @@ same summary with failed entries marked, then an alert containing the failures.
 1. Create a private Dokploy Compose application from this directory. The checked-in Compose
    command starts idle so the first deployment cannot generate or deliver automatically.
 2. Add the four secrets directly in Dokploy; never upload `.env`. Keep
-   `TIMEZONE=Europe/London` and `RUN_TIME=06:00`.
+   `TIMEZONE=America/Los_Angeles` and `RUN_TIME=08:00`. The schedule follows California daylight
+   saving time even when the VPS is in the UK.
 3. Attach persistent storage at `/data`. If Dokploy manages an external volume, replace the
    named volume in `docker-compose.yml` with that volume or bind mount.
 4. Upload the approved references and demo manifest/clips into the mounted paths.

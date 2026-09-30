@@ -1,0 +1,21 @@
+{
+  "creator_id": "creator-04",
+  "name": "Ethan",
+  "sex": "male",
+  "age": 25,
+  "nationality": "American",
+  "proposed_background": "White American",
+  "hair": "short tousled dark-brown hair with a loose fringe",
+  "facial_hair": "light stubble",
+  "eye_color": "brown",
+  "source": "/Users/zulfkhar/Downloads/ethan.jpg",
+  "master_file": "master-selected-v1.jpg",
+  "master_sha256": "c745bba8ede287dbab70631c62b756f004f4b6fafe02690d26287fa7b93bb370",
+  "dimensions": {
+    "pixelWidth": 896,
+    "pixelHeight": 1200
+  },
+  "status": "selected_master",
+  "production_enabled": false,
+  "profile_details": "Proposed fictional character details, not inferred from the photograph."
+}

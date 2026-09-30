@@ -1,0 +1,22 @@
+[
+  {
+    "key": "open-fridge",
+    "image": "../open-fridge.png",
+    "action": "She continues the refrigerator task by a very small amount: her free hand stays on the handle as the door shifts just a few centimeters. Do not have her remove food or make a new gesture."
+  },
+  {
+    "key": "mug-into-sink",
+    "image": "../mug-into-sink.png",
+    "action": "She continues lowering the mug by only a few centimeters toward the sink. Keep her hand on the mug; do not have her lift it back up or turn it toward the camera."
+  },
+  {
+    "key": "wipe-counter",
+    "image": "../wipe-counter.png",
+    "action": "She continues the same short wiping stroke across the counter by a few centimeters, keeping the cloth in contact with the surface. Do not add another cleaning gesture or change tasks."
+  },
+  {
+    "key": "move-grocery-bag",
+    "image": "../move-grocery-bag.png",
+    "action": "She shifts the grocery bag a few centimeters across the counter while the handle settles lightly in her fingers. Do not lift the bag or take out any groceries."
+  }
+]

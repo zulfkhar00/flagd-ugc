@@ -1,0 +1,21 @@
+{
+  "creator_id": "creator-05",
+  "name": "Daniel",
+  "sex": "male",
+  "age": 29,
+  "nationality": "American",
+  "proposed_background": "Korean American",
+  "hair": "medium-length dark wavy hair with a center part",
+  "facial_hair": "clean-shaven",
+  "eye_color": "brown",
+  "source": "/Users/zulfkhar/Downloads/daniel.jpg",
+  "master_file": "master-selected-v1.jpg",
+  "master_sha256": "c8e359feb7a1856d7ea64fc68dfd5e5273799842a0c545d7f84e0fb4203da552",
+  "dimensions": {
+    "pixelWidth": 896,
+    "pixelHeight": 1200
+  },
+  "status": "selected_master",
+  "production_enabled": false,
+  "profile_details": "Proposed fictional character details, not inferred from the photograph."
+}

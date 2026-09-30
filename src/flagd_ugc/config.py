@@ -89,8 +89,8 @@ class Settings:
     gemini_image_model: str = "gemini-3-pro-image"
     kling_api_base_url: str = "https://api.klingai.com/v1"
     kling_model: str = "kling-v3"
-    timezone: str = "Europe/London"
-    run_time: str = "06:00"
+    timezone: str = "America/Los_Angeles"
+    run_time: str = "08:00"
     video_count: int = 4
     request_timeout_seconds: float = 120.0
     fal_poll_seconds: float = 60.0
@@ -123,8 +123,8 @@ class Settings:
                 "KLING_API_BASE_URL", "https://api.klingai.com/v1"
             ).rstrip("/"),
             kling_model=os.environ.get("KLING_MODEL", "kling-v3"),
-            timezone=os.environ.get("TIMEZONE", "Europe/London"),
-            run_time=os.environ.get("RUN_TIME", "06:00"),
+            timezone=os.environ.get("TIMEZONE", "America/Los_Angeles"),
+            run_time=os.environ.get("RUN_TIME", "08:00"),
             video_count=4,
             request_timeout_seconds=float(
                 os.environ.get("REQUEST_TIMEOUT_SECONDS", "120")

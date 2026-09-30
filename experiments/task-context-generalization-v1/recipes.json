@@ -1,0 +1,32 @@
+[
+  {
+    "key": "bedroom-make-bed",
+    "label": "Bedroom · straightening the duvet",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone recording. Use the supplied master photo only to preserve the same woman's identity and long dark-blonde hair. In a normal contemporary American apartment bedroom, she is already pulling one corner of the duvet into place with her free hand. Her torso leans slightly over the bed, and her gaze stays on the bedding. Her expression is neutral and incidental. She wears a plain comfortable sweatshirt. Show partial ordinary bedding, a nightstand with a lamp, white blinds and a laundry basket; keep the room lived-in but normal, not staged or run-down. Natural room light, off-center handheld crop."
+  },
+  {
+    "key": "bathroom-hang-towel",
+    "label": "Bathroom · hanging a hand towel",
+    "prompt": "Create one realistic 9:16 frame from the direct front camera of the same woman holding her phone herself. Preserve her identity and long dark-blonde hair from the supplied master. In an ordinary contemporary American apartment bathroom, she is already hanging a hand towel over the towel bar with her free hand. Her arm reaches toward the bar, her body turns slightly toward the task, and she looks at the towel rather than the viewer. Face emotionally neutral. She wears an ordinary soft-gray long-sleeve top. Show partial sink, vanity cabinetry and towel bar, but no mirror or reflective surface. Normal bathroom lighting and casual phone exposure, not a polished portrait."
+  },
+  {
+    "key": "living-room-fold-throw",
+    "label": "Living room · folding a throw blanket",
+    "prompt": "Create a candid vertical 9:16 paused frame from a casual live front-camera recording, keeping the same woman's identity and long dark-blonde hair from the master photo. In a normal U.S. apartment living room, she is already folding a throw blanket over the back of an ordinary sofa with her free hand. The blanket and arm are visible in the near foreground; her upper body leans with the small task and her gaze stays on the fabric. Neutral face, no performance. She wears a simple dark-green T-shirt. Include a partial coffee table and a couple of everyday living-room items; keep the setting ordinary and not professionally styled. Natural room light, slightly off-center phone crop."
+  },
+  {
+    "key": "entryway-tie-shoe",
+    "label": "Entryway · tying a sneaker",
+    "prompt": "Create one realistic 9:16 frame from the front-facing camera of a phone the same woman holds herself, preserving her identity and long dark-blonde hair. She is seated on a simple bench in the entry area of a normal contemporary American apartment, already tying the lace of one sneaker with her free hand. Her shoulders and torso angle down toward her knee, and her gaze stays on the lace. Keep her face relaxed and emotionally neutral. She wears an ordinary sweatshirt and jeans. Show a standard interior door, a coat on a simple hook and another pair of everyday shoes. No mirror or reflective surface. Casual handheld framing and practical home lighting."
+  },
+  {
+    "key": "parked-car-seatbelt",
+    "label": "Parked car · settling the seatbelt",
+    "prompt": "Create a believable vertical 9:16 frame from the live front camera of the same woman holding her phone herself inside a stationary parked car. Preserve her identity and long dark-blonde hair from the master reference. The car is parked safely with the engine off. She is already drawing the seatbelt a little flatter across her shoulder with her free hand, checking that it lies comfortably. Her gaze stays on the belt near her shoulder; her face remains neutral. She wears an ordinary casual jacket over a T-shirt. Include partial familiar U.S.-style car interior details, window light and a glimpse of a parked lot or driveway through the window. The recording phone is outside the image; no mirror selfie, visible phone, other person or driving motion."
+  },
+  {
+    "key": "laundry-fold-towel",
+    "label": "Laundry · folding a towel",
+    "prompt": "Create one realistic vertical 9:16 image from a casual front-camera phone video, using the supplied master only to preserve the same woman's identity and long dark-blonde hair. In a normal American apartment laundry area, she is already folding a clean bath towel on top of a washer or dryer. Her free hand draws one edge over the other, her torso shifts slightly toward the machine, and her eyes stay on the towel. Face relaxed and neutral. She wears an ordinary navy sweatshirt. Show a practical washer and dryer, a laundry basket and one detergent bottle as incidental background details. Normal utility-room lighting, casual phone exposure and an imperfect crop."
+  }
+]

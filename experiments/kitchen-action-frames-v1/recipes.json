@@ -1,0 +1,32 @@
+[
+  {
+    "key": "reach-for-mug",
+    "label": "Reaching for a mug",
+    "prompt": "Create one realistic 9:16 frame from the front camera of a phone she holds herself. The supplied master photo is the sole identity reference; keep the same woman, face, eyes, skin tone and long dark-blonde hair. She is already reaching with her free hand toward a mug on the counter in a normal contemporary American apartment kitchen. Capture the arm mid-reach, with her torso slightly turned and one shoulder lifted naturally. Her attention is on the mug, her face relaxed and unperformed. The phone is held close at a slightly low angle, with part of the phone-holding forearm entering the lower corner and the phone itself outside the image. Show incidental cabinet and countertop details with a stainless or black refrigerator partly visible. She wears an ordinary dark green cotton T-shirt. Normal kitchen lighting and casual phone framing; preserve natural facial and body asymmetry. Not a posed portrait. No mirror, visible phone, other person, text or logo."
+  },
+  {
+    "key": "adjust-coffee-maker",
+    "label": "Adjusting the coffee maker",
+    "prompt": "Create a realistic vertical 9:16 frame from her own front-camera phone recording. Use the supplied master photo only to preserve the same woman's recognizable identity and long dark-blonde hair. She is in a normal U.S. apartment kitchen, already adjusting the lid or controls of an ordinary coffee maker on the counter with her free hand. Her head is slightly inclined toward the task, her body angled instead of squared to the camera, and her expression stays neutral. She holds the phone herself in the other hand at an imperfect arm's-length angle; the near shoulder is a little raised and partly cropped. She wears a simple heather-gray long-sleeve shirt with one cuff pushed up. Include only a few incidental kitchen details such as a mug, cabinets and counter. Use ordinary household light with natural phone exposure. No studio portrait styling, mirror, visible phone, other people, text or logo."
+  },
+  {
+    "key": "pull-sleeve",
+    "label": "Adjusting a pushed-up sleeve",
+    "prompt": "Make one photorealistic 9:16 paused frame from a casual front-camera video that the supplied woman is recording herself. Preserve her identity, facial features, eyes and long dark-blonde hair from the master reference. In a contemporary American apartment kitchen, she is already using her free hand to tug one sleeve down over her wrist while the phone remains in her other hand. Capture the small task in progress, with her torso turned slightly and her gaze resting on her sleeve rather than presenting to the lens. The phone is a little too close and held slightly to one side; crop part of her shoulder naturally, but keep the face readable. She wears a plain light-gray sweatshirt. A partial view of the counter, simple cabinets and a used mug grounds the kitchen. Ordinary room lighting and real phone perspective. No mirror, visible phone, extra people, text or logo."
+  },
+  {
+    "key": "set-down-mug",
+    "label": "Lowering a mug to the counter",
+    "prompt": "Create one realistic vertical 9:16 image as a paused frame from the front camera of a phone she holds herself. Use the supplied master photo only as an identity reference and keep the same woman's facial features, eyes, skin tone and long dark-blonde hair. She is in a normal contemporary American apartment kitchen, already lowering a ceramic mug toward the counter with her free hand. The mug is just above the counter; her attention is on placing it, and her face remains relaxed and incidental. Her phone arm is close to the body, giving a slightly awkward crop with one shoulder near the edge. She wears an ordinary burgundy long-sleeve top. In the background show partial modern cabinets, counter and a paper towel roll or coffee maker. Use normal ceiling light and ordinary phone exposure. No mirror, visible phone, other person, text or logo."
+  },
+  {
+    "key": "sit-at-island",
+    "label": "Lowering onto a kitchen stool",
+    "prompt": "Create a believable 9:16 frame from her own front-camera phone video, using the supplied master photo solely to preserve her identity and long dark-blonde hair. She is in a contemporary American apartment kitchen, halfway through sitting down on a plain counter-height stool. Her free hand is lightly touching the counter for balance, her body is visibly mid-transition, and her face is neutral and focused on the movement. She holds the phone with the other hand; it sits slightly above eye level and off to one side, cropping her near shoulder and part of her torso. She wears a simple navy sweatshirt and ordinary jeans. Show a partial kitchen island or counter, cabinet fronts and a glimpse of a stainless or black refrigerator. Normal practical lighting, casual phone framing, no deliberate posing. No mirror, visible phone, other people, text or logo."
+  },
+  {
+    "key": "lean-into-drawer",
+    "label": "Leaning to reach into a drawer",
+    "prompt": "Create one realistic 9:16 frame from the front-facing camera of a phone the supplied woman is holding herself. Preserve her recognizable identity, face and long dark-blonde hair from the master photo. In a normal American apartment kitchen, she is already leaning forward to reach into an open lower drawer with her free hand. Her torso angles across the frame, the camera-side shoulder is raised from holding the phone, and the crop cuts off part of her upper arm in a plausible handheld way. Her gaze follows the small task; her expression is relaxed, with no reaction to the camera. She wears an ordinary charcoal hoodie over a T-shirt. Show a partial counter and contemporary cabinet fronts; keep the kitchen familiar and incidental. Ordinary household lighting with natural phone exposure. No mirror, visible phone, photographer, other people, text or logo."
+  }
+]

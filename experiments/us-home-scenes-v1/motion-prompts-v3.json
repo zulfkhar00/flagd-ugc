@@ -1,0 +1,17 @@
+[
+  {
+    "variant": "bedroom-posture",
+    "scene": "bedroom-bed-edge",
+    "prompt": "A random three-second excerpt from a longer casual front-camera phone recording. Keep the same woman and preserve her identity, hair, clothing, bedroom and lighting. She is not reacting for the camera. Her gaze stays slightly below or beside the phone, with one ordinary blink and a small natural eye shift. Her mouth remains relaxed. At an unrelated moment, one shoulder settles and her torso shifts its weight just a few centimeters; her hair responds subtly. The phone is in her hand and drifts irregularly by a little, with a tiny vertical movement and wrist rotation that are not synchronized to her face or posture. No completed expression, smile, frown, surprise, speech, lip-sync, or choreographed sequence. The clip stops casually mid-moment."
+  },
+  {
+    "variant": "bedroom-brief-lens-glance",
+    "scene": "bedroom-bed-edge",
+    "prompt": "A random three-second excerpt from a longer casual front-camera phone recording. Keep the same woman and preserve her identity, hair, clothing, bedroom and lighting. She is not reacting for the camera. Her gaze is mostly below or beside the phone; she glances toward the lens briefly, then lets her eyes drift away again. One ordinary blink. Her lips stay relaxed and do not form an expression. At a separate, unplanned moment her shoulder or torso settles slightly, with a small response in her hair. Her self-held phone has subtle irregular vertical drift and a tiny wrist rotation independent of her face and body. Movements are quiet and incidental, not a sequence or performance. No smile, frown, surprise, speech or lip-sync. End mid-moment."
+  },
+  {
+    "variant": "kitchen-neutral",
+    "scene": "kitchen-counter",
+    "prompt": "A random three-second excerpt from a longer casual front-camera phone recording. Keep the same woman and preserve her identity, hair, clothing, kitchen, lighting and background. She is not reacting for the camera. Her gaze stays slightly beside the lens, shifts briefly toward it, then drifts away. One ordinary blink and a tiny involuntary head adjustment. Her mouth remains relaxed and almost unchanged throughout. Separately, her shoulder settles a little and the phone she holds moves with faint irregular wrist drift, a slight vertical change and tiny rotation independent of her face. Keep the motion understated and unplanned. No smirk, smile, frown, surprise, speech, lip-sync, choreographed sequence or deliberate ending pose. Stop mid-moment."
+  }
+]

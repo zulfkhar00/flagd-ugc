@@ -7,7 +7,7 @@ import pytest
 
 from flagd_ugc.config import Settings
 from flagd_ugc.db import Database
-from flagd_ugc.errors import ProviderError, ProxyBlockError, TransientError
+from flagd_ugc.errors import ProviderError, ProxyBlockError, QualityError, TransientError
 from flagd_ugc.fal_provider import FalJob
 from flagd_ugc.media import ProbeResult
 from flagd_ugc.pipeline import Pipeline
@@ -109,6 +109,79 @@ class FakeComposer:
         self.music.append(music)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"final")
+
+
+@pytest.mark.parametrize("reject_count", [2, 3])
+def test_animation_keeps_rejection_history_and_never_exceeds_budget(
+    tmp_path, monkeypatch, reject_count
+):
+    settings = Settings(
+        data_dir=tmp_path,
+        gemini_api_key="",
+        kling_api_key="",
+        telegram_bot_token="",
+        telegram_chat_id="",
+        quality_retries=2,
+    )
+    reasons = [
+        "camera arm branches into an extra hand",
+        "fingers warp during the motion",
+        "bare skin blends into the hoodie sleeve",
+    ]
+
+    class RejectingGemini(FakeGemini):
+        def review_visual(self, images, references, *, kind):
+            if self.review_calls < reject_count:
+                reason = reasons[self.review_calls]
+                self.review_calls += 1
+                raise QualityError(reason)
+            return super().review_visual(images, references, kind=kind)
+
+    monkeypatch.setattr(
+        "flagd_ugc.pipeline.validate_vertical_asset", lambda _path: (1080, 1920)
+    )
+    monkeypatch.setattr(
+        "flagd_ugc.pipeline.extract_review_frames",
+        lambda path, output_dir, count=3: [path],
+    )
+    kling = FakeKling()
+    gemini = RejectingGemini()
+    pipeline = Pipeline(settings, gemini=gemini, kling=kling, composer=FakeComposer())
+    batch = pipeline.database.get_or_create_batch(date(2026, 9, 30), 1)
+    video = pipeline.database.create_videos(
+        batch["id"], [{"hook": "rating the chat: 43/100", "demo_path": "demo.mp4"}]
+    )[0]
+    intermediate = tmp_path / "intermediate"
+    intermediate.mkdir()
+    scene = intermediate / "scene.png"
+    scene.write_bytes(b"scene")
+    direction = SimpleNamespace(
+        motion_prompt=lambda: "continue the mundane task", allow_hand_entry=False
+    )
+
+    def animate():
+        return pipeline._ensure_animation(video, scene, [], direction, intermediate)
+
+    if reject_count == 3:
+        for _ in range(2):
+            with pytest.raises(QualityError) as failed:
+                animate()
+            assert "3 attempts" in str(failed.value)
+            assert f"Last rejection: {reasons[-1]}" in str(failed.value)
+    else:
+        result = animate()
+        assert result == intermediate / "opening.mp4"
+        assert animate() == result
+
+    assert kling.calls == 3
+    assert gemini.review_calls == 3
+    stage = pipeline.database.get_video_stage(video["id"], "animation_review")
+    history = json.loads(stage["metadata_json"])["rejections"]
+    assert history == [
+        {"animation_attempt": index + 1, "reason": reason}
+        for index, reason in enumerate(reasons[:reject_count])
+    ]
+    assert stage["status"] == ("failed" if reject_count == 3 else "complete")
 
 
 def test_daily_fal_submission_cools_down_after_proxy_block(tmp_path):

@@ -4,6 +4,7 @@ from pathlib import Path
 from flagd_ugc.assets import Demo
 from flagd_ugc.config import Settings
 from flagd_ugc.pipeline import Pipeline
+from flagd_ugc.opening_director import get_opening_direction
 
 
 class FormatAwareGemini:
@@ -95,6 +96,23 @@ def test_hook_formats_are_persisted_and_never_regenerated_on_resume(tmp_path):
         "his texting confidence",
     ]
     assert len({row["opening_direction"] for row in first}) == 4
+    assert len(
+        {get_opening_direction(row["opening_direction"]).task_key for row in first}
+    ) == 4
     assert [row["opening_direction"] for row in first] == [
         row["opening_direction"] for row in second
     ]
+
+    next_date = date(2026, 9, 19)
+    next_batch = pipeline.database.get_or_create_batch(next_date, 4)
+    next_day = pipeline._ensure_hooks(
+        int(next_batch["id"]), 4, _demos(), next_date
+    )
+    today_by_format = {row["hook_format"]: row for row in first}
+    next_day_by_format = {row["hook_format"]: row for row in next_day}
+    assert gemini.calls == 2
+    assert all(
+        get_opening_direction(today_by_format[hook_format]["opening_direction"]).task_key
+        != get_opening_direction(next_day_by_format[hook_format]["opening_direction"]).task_key
+        for hook_format in today_by_format.keys() & next_day_by_format.keys()
+    )

@@ -1,0 +1,42 @@
+[
+  {
+    "key": "bedroom-bed-edge",
+    "label": "Bedroom · sitting at bed edge",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She sits naturally on the edge of her bed in a normal contemporary American apartment bedroom. Show only a few background fragments: an unmade bed with a comforter and pillows, a nightstand with a lamp, white horizontal blinds, and a laundry basket or clothes on a chair. Affordable ordinary furniture, warm off-white walls. She wears a simple navy crewneck sweatshirt. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, a little off-center and slightly tilted. Normal household light; phone exposure may be imperfect. Lived-in and recognizable, with no deliberate distressed details, luxury styling, bare hanging bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "kitchen-counter",
+    "label": "Kitchen · leaning by counter",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She stands casually at the counter in a normal contemporary American apartment kitchen. In the background, include partial glimpses of simple modern upper cabinets, a laminate or quartz-look counter, part of a stainless or black refrigerator, and a used mug beside a paper towel roll or coffee maker. She wears an ordinary black cotton T-shirt. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, a little off-center and slightly tilted. Normal ceiling or recessed lighting; phone exposure may be imperfect. Lived-in but clean, not professionally styled. No distressed surfaces, excessive yellow light, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "living-room-sofa",
+    "label": "Living room · on the sofa",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She sits on one end of a normal apartment sofa in a contemporary American living room. Behind her are partial glimpses of a coffee table, a throw blanket, a floor lamp, and a TV stand or window blinds; one everyday item can sit on the table. The room has ordinary affordable furnishings and warm neutral walls. She wears a simple heather-gray hoodie. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, a little off-center and slightly tilted. Ordinary lamp or window light; phone exposure may be imperfect. Natural lived-in room, not an influencer set. No distressed décor, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "dining-nook",
+    "label": "Dining area · at the table",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She sits at a small dining table in a normal American apartment dining area. Show partial glimpses of a simple table and chairs, a kitchen opening or cabinets in the background, and a glass or used mug with one ordinary mail envelope on the table. She wears a plain burgundy long-sleeve top. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, slightly off-center with a natural handheld tilt. Normal room lighting; phone exposure may be imperfect. The home feels ordinary and occupied, not staged. No distressed finishes, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "home-office-desk",
+    "label": "Home office · desk chair",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She sits sideways in a desk chair in a normal American apartment home workspace. Behind her are partial glimpses of a practical desk, a closed laptop, a charging cable, and a bookshelf or small drawer unit. Include one or two everyday objects rather than a styled display. She wears a simple green sweatshirt. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, slightly off-center and imperfectly level. Ordinary room light; phone exposure may be imperfect. The workspace is used but orderly. No luxury office, distressed furniture, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "apartment-entry",
+    "label": "Entryway · just came inside",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She has just stepped into the entry area of a normal contemporary American apartment. Behind her are casually cropped white or off-white drywall, a standard American interior door, a coat on a simple hook, sneakers near the wall, and the edge of a console table or reusable shopping bag. She wears an ordinary olive rain jacket over a black T-shirt, casually half unzipped. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, slightly off-center as if walking. Normal flush-mount ceiling light or light from the living room; phone exposure may be imperfect. Modest and maintained, not cramped or shabby. No distressed architecture, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "laundry-area",
+    "label": "Laundry area · sorting clothes",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She is in the laundry area of a normal American apartment or house. Show a partial view of a standard white washer or dryer, a laundry basket with clothes, and a shelf or cabinet with detergent. The space is practical and reasonably tidy. She wears a simple light-blue T-shirt. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, a little off-center and slightly tilted. Ordinary household lighting; phone exposure may be imperfect. No distressed appliances, bare bulb, text, logo, extra people or visible phone."
+  },
+  {
+    "key": "bathroom-vanity",
+    "label": "Bathroom · near the vanity",
+    "prompt": "Create one realistic vertical 9:16 frame from a casual front-camera phone video. Use the supplied woman as the identity reference and preserve her recognizable face, eyes, skin marks and long dark-blonde hair. She stands by the vanity in a normal contemporary American apartment bathroom. Show only partial background details: a standard sink and counter, a simple framed mirror, hand soap, and a folded hand towel. The finishes are ordinary and maintained, with a neutral shower curtain or cabinet edge in the background. She wears a simple charcoal hoodie. Her expression is relaxed, just beginning to notice something near the phone. Arm's-length selfie framing, slightly off-center and handheld. Normal bathroom ceiling or vanity lighting; phone exposure may be imperfect. No luxury spa styling, distressed fixtures, bare bulb, text, logo, extra people or visible phone."
+  }
+]

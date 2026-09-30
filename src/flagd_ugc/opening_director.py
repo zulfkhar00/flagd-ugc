@@ -1,9 +1,9 @@
-"""Deterministic creative direction for daily self-shot opening clips.
+"""Deterministic, date-rotated task direction for daily self-shot opening clips.
 
-The copy format is chosen before generation and persisted with the video.  This module maps
-that already-persisted format to one concrete, tested opening treatment.  It deliberately
-does not ask a model to choose a setting, outfit, or reaction: a resumed batch therefore
-uses the same creative recipe it started with.
+The copy format and task are chosen before generation and persisted with the video. This
+module maps the format and batch date to a concrete task, setting and wardrobe. It does not
+ask a model to invent an action or perform a separate reaction for the viewer. Persisted
+legacy reaction directions remain readable for existing batches that need to resume.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from .errors import QualityError
 from .hook_formats import hook_format_keys
 from .reactions import get_reaction
 from .scenarios import get_scenario
+from .task_scenes import TASK_SCENES, get_task_scene, task_scene_keys
 from .visual_hooks import get_visual_hook
 from .wardrobes import get_wardrobe
 
@@ -24,15 +25,25 @@ class OpeningDirection:
 
     key: str
     hook_format: str
-    scenario_key: str
+    scenario_key: str | None
     wardrobe_key: str
     reaction_key: str | None = None
     visual_hook_key: str | None = None
+    task_key: str | None = None
 
     def __post_init__(self) -> None:
+        if self.task_key:
+            if self.scenario_key or self.reaction_key or self.visual_hook_key:
+                raise ValueError(
+                    "a task opening direction cannot also select a legacy scenario"
+                )
+            get_task_scene(self.task_key)
+            get_wardrobe(self.wardrobe_key)
+            return
         if bool(self.reaction_key) == bool(self.visual_hook_key):
             raise ValueError("an opening direction needs exactly one motion treatment")
         # Resolve eagerly so accidental misspellings cannot reach a paid provider call.
+        assert self.scenario_key is not None
         get_scenario(self.scenario_key)
         get_wardrobe(self.wardrobe_key)
         if self.reaction_key:
@@ -42,6 +53,14 @@ class OpeningDirection:
 
     def scene_prompt(self) -> str:
         """Return the fully specified frame-zero prompt for Nano Banana Pro."""
+        if self.task_key:
+            task = get_task_scene(self.task_key)
+            return (
+                f"DAILY TASK OPENING: {task.label}. Keep the top safe area clear; "
+                "the short caption is composited locally after animation.\n\n"
+                f"{task.scene_prompt()}"
+            )
+        assert self.scenario_key is not None
         scenario = get_scenario(self.scenario_key)
         return (
             f"DAILY OPENING DIRECTION: {self.key}\n"
@@ -51,12 +70,19 @@ class OpeningDirection:
         )
 
     def motion_prompt(self) -> str:
-        """Return the chosen silent visual-hook performance for Kling.
+        """Return the chosen silent task continuation for Kling or a legacy performance.
 
         The input still is the authority for the actual room, outfit, framing and starting
-        posture.  The performance prompt controls only the three-second reaction.  That
-        avoids a reaction preset accidentally changing a scene's wardrobe or location.
+        posture. The task direction controls only the three-second continuation and does
+        not replace the visual information in the starting frame.
         """
+        if self.task_key:
+            performance = get_task_scene(self.task_key).motion_prompt()
+            return (
+                "Continue only the mundane physical task already visible in the input. "
+                "Keep its action, room, outfit, identity, framing and starting posture.\n\n"
+                f"{performance}"
+            )
         if self.visual_hook_key:
             performance = get_visual_hook(self.visual_hook_key).motion_prompt()
         else:
@@ -71,15 +97,16 @@ class OpeningDirection:
     @property
     def allow_hand_entry(self) -> bool:
         """Whether the planned free-hand gesture needs fal's hand-entry allowance."""
+        if self.task_key:
+            return False
         if self.visual_hook_key:
             return get_visual_hook(self.visual_hook_key).allow_hand_entry
         assert self.reaction_key is not None
         return get_reaction(self.reaction_key).allow_hand_entry
 
 
-# Each format has its own setting, wardrobe and visual action.  Since one daily batch has
-# distinct formats, this creates four visibly different openings without random prompt drift.
-OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = (
+# Previous keys are retained so already persisted batches can resume their original scenes.
+LEGACY_OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = (
     OpeningDirection(
         key="scorecard-bed-facepalm-v1",
         hook_format="scorecard",
@@ -131,28 +158,53 @@ OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = (
     ),
 )
 
-_BY_KEY = {item.key: item for item in OPENING_DIRECTIONS}
-_BY_FORMAT = {item.hook_format: item for item in OPENING_DIRECTIONS}
+TASK_OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
+    OpeningDirection(
+        key=f"task-{hook_format}-{task.key}-v1",
+        hook_format=hook_format,
+        scenario_key=None,
+        wardrobe_key=task.wardrobe_key,
+        task_key=task.key,
+    )
+    for hook_format in hook_format_keys()
+    for task in TASK_SCENES
+)
+_TASK_BY_FORMAT_AND_SCENE = {
+    (item.hook_format, item.task_key): item for item in TASK_OPENING_DIRECTIONS
+}
+_TASK_BY_KEY = {item.key: item for item in TASK_OPENING_DIRECTIONS}
+_LEGACY_BY_KEY = {item.key: item for item in LEGACY_OPENING_DIRECTIONS}
+OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
+    _TASK_BY_FORMAT_AND_SCENE[
+        (hook_format, task_scene_keys()[index % len(task_scene_keys())])
+    ]
+    for index, hook_format in enumerate(hook_format_keys())
+)
 
-if set(_BY_FORMAT) != set(hook_format_keys()):  # pragma: no cover - module invariant
-    raise RuntimeError("every hook format must have one opening direction")
+if len(TASK_OPENING_DIRECTIONS) != len(hook_format_keys()) * len(task_scene_keys()):
+    raise RuntimeError("task opening direction matrix is incomplete")
 
 
 def get_opening_direction(key: str) -> OpeningDirection:
-    try:
-        return _BY_KEY[key]
-    except KeyError as exc:
-        raise QualityError(f"unknown opening direction {key!r}") from exc
+    direction = _TASK_BY_KEY.get(key) or _LEGACY_BY_KEY.get(key)
+    if direction is None:
+        raise QualityError(f"unknown opening direction {key!r}")
+    return direction
 
 
-def direction_for_hook_format(hook_format: str) -> OpeningDirection:
+def direction_for_hook_format(
+    hook_format: str, *, rotation: int = 0
+) -> OpeningDirection:
+    formats = hook_format_keys()
     try:
-        return _BY_FORMAT[hook_format]
-    except KeyError as exc:
+        format_index = formats.index(hook_format)
+    except ValueError as exc:
         raise QualityError(
             f"no approved opening direction for hook format {hook_format!r}"
         ) from exc
+    task_key = task_scene_keys()[(rotation + format_index) % len(task_scene_keys())]
+    return _TASK_BY_FORMAT_AND_SCENE[(hook_format, task_key)]
 
 
 def opening_direction_keys() -> tuple[str, ...]:
-    return tuple(item.key for item in OPENING_DIRECTIONS)
+    return tuple(item.key for item in TASK_OPENING_DIRECTIONS)

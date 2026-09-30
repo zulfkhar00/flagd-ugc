@@ -1,0 +1,18 @@
+[
+  {
+    "key": "pull-from-cabinet",
+    "prompt": "Create a realistic vertical 9:16 frame from a casual self-recorded front-camera video. Preserve the same woman and long dark-blonde hair from the supplied master photo. In a normal U.S. apartment kitchen, she is already reaching into an open upper cabinet to take down one everyday bowl. Her free hand is inside the shelf area; her torso leans toward the cabinet and her gaze stays on the task. Neutral mouth and unposed face. She wears an ordinary green cotton shirt. Show only partial cabinets and counter. The live frame must not be a mirror or reflection: the phone recording her is outside the picture and no other phone or camera is visible."
+  },
+  {
+    "key": "plug-in-charger",
+    "prompt": "Create a realistic vertical 9:16 frame from the direct front camera of a phone the woman herself holds. Preserve the same woman's identity and long dark-blonde hair from the master reference. In a normal American apartment kitchen, a separate everyday phone rests flat on the counter and she is already plugging a charging cable into it with her free hand. Show the separate phone only on the countertop as part of the task; the phone filming her must remain outside the image. Her fingers are at the charging port and she looks down at the connection. Neutral expression, ordinary navy long-sleeve shirt, partial cabinets and mug. No mirror, reflection, visible recording phone, photographer or second person."
+  },
+  {
+    "key": "fold-hoodie-sleeve",
+    "prompt": "Create one realistic vertical 9:16 frame from the direct live front camera of the phone she is holding herself. Preserve the same woman's identity and long dark-blonde hair. Beside an ordinary living-room sofa, she is already using her free hand to fold the cuff of her charcoal hoodie sleeve once. The sleeve adjustment is visible low in the frame; her torso turns slightly toward her hand and her face remains fully visible, relaxed and neutral. The recording phone is outside the picture. This is not a mirror selfie; no phone, screen, camera or reflection is visible. Include a partial sofa and ordinary throw blanket, natural room light and casual imperfect framing."
+  },
+  {
+    "key": "pick-up-keys",
+    "prompt": "Create a candid vertical 9:16 frame from the front-facing camera of a phone the same woman is holding herself. Preserve her identity and long dark-blonde hair from the master reference. In a contemporary American apartment entryway, she is already reaching with her free hand to lift a small set of keys from a simple console table. Her torso leans toward the keys; gaze follows her hand; face relaxed and neutral. Show part of a standard interior door, a coat on a hook, and sneakers near the wall. The recording phone is outside the image; this must be a direct front-camera view, not a mirror or reflective surface. No visible phone, camera, photographer or other person."
+  }
+]

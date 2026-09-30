@@ -1,0 +1,32 @@
+[
+  {
+    "key": "bedroom-make-bed",
+    "image": "../bedroom-make-bed.png",
+    "action": "She continues pulling the same duvet corner into place by only a few centimeters. Her torso leans slightly with the reach; do not smooth the bedding completely or add another action."
+  },
+  {
+    "key": "bathroom-hang-towel",
+    "image": "../bathroom-hang-towel.png",
+    "action": "She finishes only a tiny part of the existing towel adjustment, moving the towel edge a few centimeters on the bar. Her shoulder and torso follow the reach subtly; do not turn toward the camera."
+  },
+  {
+    "key": "living-room-fold-throw",
+    "image": "../living-room-fold-throw-replacement.png",
+    "action": "She continues folding the same section of throw blanket over the sofa back by a few centimeters. Her torso shifts gently with the arm movement; do not complete a neat finished fold."
+  },
+  {
+    "key": "entryway-tie-shoe",
+    "image": "../entryway-tie-shoe.png",
+    "action": "She makes one small continuation of the lace adjustment already underway. Her upper torso inclines a little toward the shoe and settles; do not finish with a posed look upward."
+  },
+  {
+    "key": "parked-car-seatbelt",
+    "image": "../parked-car-seatbelt.png",
+    "action": "She smooths the seatbelt against her shoulder by a few centimeters, with a small corresponding shoulder and torso adjustment. The car stays parked and still; do not have her look toward the lens."
+  },
+  {
+    "key": "laundry-fold-towel",
+    "image": "../laundry-fold-towel.png",
+    "action": "She continues folding the same towel edge over by a few centimeters on the washer or dryer. Let her torso shift gently toward the surface; do not finish the fold or pick up another item."
+  }
+]

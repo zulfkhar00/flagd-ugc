@@ -1,0 +1,27 @@
+[
+  {
+    "key": "adjust-coffee-maker-replacement",
+    "label": "Coffee maker · free hand adjusting it",
+    "prompt": "Create one realistic vertical 9:16 paused phone-video frame using the supplied master image only to preserve the woman's identity and long dark-blonde hair. She is in a normal contemporary U.S. apartment kitchen, using her free hand to press the switch on an ordinary coffee maker. Her attention is naturally on the task; her face stays neutral. She wears a simple gray long-sleeve shirt with one cuff pushed up. Show incidental modern kitchen cabinets, countertop and a used mug. Use ordinary kitchen light and phone-camera color. Keep the composition casually close, with a small portion of her camera-bearing sleeve at one edge. No portrait styling, visible phone, text or logo."
+  },
+  {
+    "key": "pull-sleeve-replacement",
+    "label": "Sleeve · pulling down the phone-arm cuff",
+    "prompt": "Create one realistic vertical 9:16 frame from the live front camera of a phone she is holding herself. Preserve the same woman's identity and long dark-blonde hair from the master reference. She stands at a kitchen counter in a normal U.S. apartment, using her free hand to pull the cuff down over the wrist of her phone-holding arm. The phone arm extends toward the camera, with its sleeve and shoulder partly cropped; the free hand crosses her torso to adjust that cuff. She wears a plain light-gray sweatshirt. Her gaze is on the small sleeve adjustment and her expression stays neutral. Show a partial countertop and simple cabinets. Ordinary room light and natural phone exposure. No mirror, visible phone, photographer, text or logo."
+  },
+  {
+    "key": "set-down-mug-replacement",
+    "label": "Mug · lowering it to the counter",
+    "prompt": "Create a candid 9:16 frame from the front-facing camera of the phone she holds herself. Use the supplied master as the identity reference for the same woman and her long dark-blonde hair. In a contemporary American apartment kitchen, she is lowering a ceramic mug toward the counter with her free hand; the mug is just above the surface and she is focused on placing it. Her camera-side arm reaches toward the phone and is partly cut off by the frame, making an asymmetrical close selfie composition. She wears an ordinary burgundy long-sleeve top. Include partial modern cabinets, a countertop and an ordinary appliance. The face remains relaxed, with normal household lighting. No mirror, visible phone, photographer, text or logo."
+  },
+  {
+    "key": "sit-at-island-replacement",
+    "label": "Kitchen stool · mid-sit",
+    "prompt": "Create one candid 9:16 frame from the live front camera of a phone the same woman holds herself. Preserve her identity, facial features and long dark-blonde hair from the supplied master photo. She is halfway through sitting on a plain kitchen stool in an ordinary contemporary U.S. apartment. Her free hand lightly steadies against the counter while her phone-bearing arm remains extended toward the camera and mostly outside the crop. Her torso is caught mid-lowering, not posed; her face is relaxed and focused on balancing. She wears a plain navy sweatshirt and jeans. Show a partial island or counter and a stainless or black refrigerator. Ordinary kitchen lighting and a naturally off-center handheld crop. No mirror, visible phone, photographer, text or logo."
+  },
+  {
+    "key": "lean-into-drawer-replacement",
+    "label": "Drawer · reaching into it",
+    "prompt": "Create one realistic vertical 9:16 frame from the front camera of a phone the supplied woman is holding herself. Keep her identity and long dark-blonde hair consistent with the master reference. She is already leaning forward to reach into an open lower kitchen drawer with her free hand. Her phone-holding arm extends toward the camera and is mostly cropped, while her torso angles naturally across the frame. Her gaze stays on the drawer and her expression is neutral. She wears an ordinary charcoal hoodie over a T-shirt. Include only partial contemporary American kitchen cabinets, counter and a refrigerator edge. Use normal practical lighting and casual phone-camera framing. No mirror, visible phone, photographer, text or logo."
+  }
+]

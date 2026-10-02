@@ -1,5 +1,10 @@
+import json
+
+import pytest
+
 from flagd_ugc import config
 from flagd_ugc.config import Settings
+from flagd_ugc.errors import ConfigurationError
 
 
 def test_default_text_model_uses_current_gemini_flash(monkeypatch):
@@ -48,3 +53,36 @@ def test_explicit_font_override_is_preserved(monkeypatch):
     monkeypatch.setenv("FONT_FILE", "~/custom-font.ttf")
 
     assert Settings.from_env().font_file.name == "custom-font.ttf"
+
+
+def test_creator_chat_mapping_preserves_original_and_requires_new_destinations(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "original-chat")
+    monkeypatch.setenv(
+        "TELEGRAM_CREATOR_CHAT_IDS",
+        json.dumps({"creator-02": -5280000000, "creator-03": "-5040000000"}),
+    )
+    settings = Settings.from_env()
+
+    assert settings.telegram_chat_for_creator("creator-01") == "original-chat"
+    assert settings.telegram_chat_for_creator("creator-02") == "-5280000000"
+    assert settings.telegram_chat_for_creator("creator-03") == "-5040000000"
+    with pytest.raises(ConfigurationError, match="creator-04"):
+        settings.telegram_chat_for_creator("creator-04")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "not-json",
+        "[]",
+        '{"creator-02": ""}',
+        '{"creator-02": true}',
+        '{"creator-02": "same", "creator-03": "same"}',
+        '{"creator-02": "original-chat"}',
+    ],
+)
+def test_invalid_creator_chat_mappings_fail_before_delivery(monkeypatch, value):
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "original-chat")
+    monkeypatch.setenv("TELEGRAM_CREATOR_CHAT_IDS", value)
+    with pytest.raises(ConfigurationError):
+        Settings.from_env()

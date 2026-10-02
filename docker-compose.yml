@@ -10,6 +10,7 @@ services:
       FAL_KEY: ${FAL_KEY:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      TELEGRAM_CREATOR_CHAT_IDS: ${TELEGRAM_CREATOR_CHAT_IDS:-}
       TIMEZONE: ${TIMEZONE:-America/Los_Angeles}
       RUN_TIME: ${RUN_TIME:-08:00}
       TZ: ${TIMEZONE:-America/Los_Angeles}

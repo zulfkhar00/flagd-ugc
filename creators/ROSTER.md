@@ -8,6 +8,10 @@ identity records are saved under their creator folders. New creators are not ena
 production. Next: creator-specific reference selection and prompts that support both men
 and women in the main pipeline.
 
+Separate Telegram groups are available for the four new creators, with bot membership and
+file permissions verified. Per-creator destination selection is implemented; see
+[TELEGRAM_DELIVERY.md](TELEGRAM_DELIVERY.md) for configuration and activation status.
+
 All five are fictional American adults living in the United States. Ages and new names below
 are proposed character details. Nationality and ancestry are separate choices; the existing
 creator's ancestry is not inferred from her photo. Content angles are independent of ancestry.

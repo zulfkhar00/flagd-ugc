@@ -52,6 +52,11 @@ _SCORECARD_RE = re.compile(
     re.IGNORECASE,
 )
 _FRACTIONAL_SCORE_RE = re.compile(r"\b(?P<score>100|[1-9]\d?)/100\b")
+_FEEDBACK_DESCRIPTION_RE = re.compile(
+    r"\b(?:feedback|results?|scores?|scored|scoring|skill\s+breakdown)\b"
+    r"|\bsimulated\s+date\s+(?:goes|went)\s+(?:poorly|well)\b",
+    re.IGNORECASE,
+)
 
 
 HOOK_FORMATS: tuple[HookFormat, ...] = (
@@ -178,6 +183,8 @@ def format_supports_demo(format_key: str, description: str) -> bool:
     """Whether a demo description has what a format needs to stay truthful."""
     if format_key == "scorecard":
         return _description_score(description) is not None
+    if format_key == "inner-thought":
+        return _FEEDBACK_DESCRIPTION_RE.search(description) is not None
     return True
 
 
@@ -226,6 +233,12 @@ def validate_formatted_hook(
     elif hook_format == "inner-thought":
         if not re.match(r"^i\s+\S", normalized, re.IGNORECASE):
             raise QualityError("inner-thought hook must start with 'i '")
+        if demo_description is not None and not format_supports_demo(
+            hook_format, demo_description
+        ):
+            raise QualityError(
+                "inner-thought hook requires a demo with visible feedback or a result"
+            )
     score_match = _FRACTIONAL_SCORE_RE.search(normalized)
     if score_match and hook_format != "scorecard":
         supported_score = _description_score(demo_description or "")
@@ -247,9 +260,9 @@ def assign_hook_formats(
 ) -> list[tuple[Demo, HookFormat]]:
     """Give each selected demo a different approved caption format.
 
-    The only constrained format is scorecard: it is selected only alongside a demo whose
-    reviewed description states the precise score. The ordering is date-stable and the demo
-    pick is deterministic, so a text-generation retry has the same grounding inputs.
+    Scorecards require the precise score in the reviewed description; inner thoughts require
+    visible feedback or a result. Unsupported formats are skipped. The ordering is date-stable
+    and the demo pick is deterministic, so a text retry has the same grounding inputs.
     """
     if count < 1:
         raise ValueError("hook format count must be positive")

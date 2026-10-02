@@ -2,15 +2,35 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from .db import Database
 from .errors import DeliveryUncertain, ProviderError, TransientError
 
+if TYPE_CHECKING:
+    from .config import Settings
+
 
 class TelegramClient:
+    @classmethod
+    def for_creator(
+        cls,
+        settings: Settings,
+        creator_id: str,
+        database: Database,
+        *,
+        client: httpx.Client | None = None,
+    ) -> TelegramClient:
+        return cls(
+            settings.telegram_bot_token,
+            settings.telegram_chat_for_creator(creator_id),
+            database,
+            timeout=settings.request_timeout_seconds,
+            client=client,
+        )
+
     def __init__(
         self,
         token: str,

@@ -100,11 +100,10 @@ class Pipeline:
 
     def _telegram_client(self) -> Any:
         if self.telegram is None:
-            self.telegram = TelegramClient(
-                self.settings.telegram_bot_token,
-                self.settings.telegram_chat_id,
+            self.telegram = TelegramClient.for_creator(
+                self.settings,
+                "creator-01",
                 self.database,
-                timeout=self.settings.request_timeout_seconds,
             )
         return self.telegram
 

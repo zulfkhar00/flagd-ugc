@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from .errors import ConfigurationError
 
 
 DEFAULT_GEMINI_TEXT_MODEL = "gemini-3.6-flash"
@@ -76,6 +79,39 @@ def _non_negative_int(name: str, default: int) -> int:
     return value
 
 
+def _telegram_creator_chats() -> dict[str, str]:
+    raw = os.environ.get("TELEGRAM_CREATOR_CHAT_IDS", "").strip()
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ConfigurationError("TELEGRAM_CREATOR_CHAT_IDS must be a JSON object") from exc
+    if not isinstance(value, dict):
+        raise ConfigurationError("TELEGRAM_CREATOR_CHAT_IDS must be a JSON object")
+    chats: dict[str, str] = {}
+    for creator_id, chat_id in value.items():
+        if (
+            not isinstance(creator_id, str)
+            or not creator_id.strip()
+            or isinstance(chat_id, bool)
+            or not isinstance(chat_id, (str, int))
+            or not str(chat_id).strip()
+        ):
+            raise ConfigurationError("each creator must have a non-empty Telegram chat ID")
+        chats[creator_id] = str(chat_id).strip()
+    if len(set(chats.values())) != len(chats):
+        raise ConfigurationError("each creator must have a different Telegram chat ID")
+    original_chat = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if (
+        original_chat
+        and "creator-01" not in chats
+        and original_chat in chats.values()
+    ):
+        raise ConfigurationError("each creator must have a different Telegram chat ID")
+    return chats
+
+
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
@@ -102,6 +138,7 @@ class Settings:
     final_retention_days: int = 30
     intermediate_retention_days: int = 7
     font_file: Path = field(default_factory=default_font_file)
+    telegram_creator_chat_ids: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -111,6 +148,7 @@ class Settings:
             kling_api_key=os.environ.get("KLING_API_KEY", ""),
             telegram_bot_token=os.environ.get("TELEGRAM_BOT_TOKEN", ""),
             telegram_chat_id=os.environ.get("TELEGRAM_CHAT_ID", ""),
+            telegram_creator_chat_ids=_telegram_creator_chats(),
             fal_api_key=os.environ.get("FAL_KEY", ""),
             fal_kling_model=os.environ.get(
                 "FAL_KLING_MODEL", "fal-ai/kling-video/v3/standard/image-to-video"
@@ -187,7 +225,15 @@ class Settings:
             required.update(
                 {
                     "TELEGRAM_BOT_TOKEN": self.telegram_bot_token,
-                    "TELEGRAM_CHAT_ID": self.telegram_chat_id,
+                    "TELEGRAM_CHAT_ID": self.telegram_chat_for_creator("creator-01"),
                 }
             )
         return [name for name, value in required.items() if not value]
+
+    def telegram_chat_for_creator(self, creator_id: str) -> str:
+        """Resolve an explicit destination; preserve the original creator's legacy chat."""
+        if chat_id := self.telegram_creator_chat_ids.get(creator_id):
+            return chat_id
+        if creator_id == "creator-01":
+            return self.telegram_chat_id
+        raise ConfigurationError(f"no Telegram chat configured for creator {creator_id!r}")

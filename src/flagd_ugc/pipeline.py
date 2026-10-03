@@ -234,6 +234,7 @@ class Pipeline:
                 hook_format = str(item["hook_format"])
                 raw_hook = str(item["hook"])
                 raw_title = str(item["title"])
+                reaction_key = str(item["reaction_key"])
             except (KeyError, TypeError) as exc:
                 raise QualityError("generated hook is missing required fields") from exc
             if demo_path in seen or demo_path not in expected:
@@ -261,7 +262,9 @@ class Pipeline:
                 raise QualityError("generated batch repeated an upload title")
             seen_titles.add(title_key)
             direction = direction_for_hook_format(
-                hook_format, rotation=run_date.toordinal() if run_date else 0
+                hook_format,
+                rotation=run_date.toordinal() if run_date else 0,
+                reaction_key=reaction_key,
             )
             validated.append(
                 {
@@ -335,10 +338,15 @@ class Pipeline:
                 )
                 existing = target
             self.database.start_video_stage(video_id, "scene_review")
+            reaction_review = (
+                {"reaction_key": direction.reaction_key}
+                if direction.reaction_scene_key
+                else {}
+            )
             try:
                 result = retry_transient(
                     lambda: self.gemini.review_visual(
-                        [existing], references, kind="opening scene"
+                        [existing], references, kind="opening scene", **reaction_review
                     ),
                     retries=self.settings.transient_retries,
                 )
@@ -506,12 +514,20 @@ class Pipeline:
                     },
                 )
                 existing = target
-            frames = extract_review_frames(existing, frames_dir, count=3)
+            is_reaction = bool(getattr(direction, "reaction_scene_key", None))
+            # A three-second clip yields only three frames at the default 1 FPS.
+            frame_options = {"count": 6, "fps": 2} if is_reaction else {"count": 3}
+            frames = extract_review_frames(
+                existing, frames_dir, **frame_options
+            )
             self.database.start_video_stage(video_id, "animation_review")
+            reaction_review = (
+                {"reaction_key": direction.reaction_key} if is_reaction else {}
+            )
             try:
                 result = retry_transient(
                     lambda: self.gemini.review_visual(
-                        frames, references, kind="opening animation"
+                        frames, references, kind="opening animation", **reaction_review
                     ),
                     retries=self.settings.transient_retries,
                 )

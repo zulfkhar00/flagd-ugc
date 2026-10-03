@@ -126,7 +126,7 @@ def test_default_prompt_is_frame_zero_and_does_not_specify_age():
     assert "not the peak reaction" in prompt
     assert "she holds the front-camera phone herself" in prompt
     assert "the free hand remains below the crop" in prompt
-    assert "ordinary lived-in bedroom" in prompt
+    assert "lived-in contemporary u.s. apartment bedroom" in prompt
     assert "three-second" in prompt
     assert re.search(r"\bage\b", prompt) is None
     assert "year old" not in prompt
@@ -151,9 +151,10 @@ def test_default_prompt_explicitly_requires_unpolished_real_life_composition():
     prompt = default_scene_prompt().lower()
 
     assert "subtly off-centre" in prompt
-    assert "mild exposure unevenness" in prompt
-    assert "allow minor compositional awkwardness" in prompt
-    assert "do not clean, balance or perfect the scene" in prompt
+    assert "realistic phone-camera color and exposure" in prompt
+    assert "viewpoint is close to eye level but a few centimetres imperfect" in prompt
+    assert "not an accumulation of worn or distressed objects" in prompt
+    assert "natural rather than polished or cinematic" in prompt
     assert "no polished portrait" in prompt
 
 

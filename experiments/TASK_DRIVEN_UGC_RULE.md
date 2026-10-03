@@ -1,6 +1,10 @@
 # Task-driven UGC generation rule
 
-Use this direction for upcoming everyday UGC scene generations. The mundane physical task
+Archived experiment: new daily hooks now use expressive silent reactions, as documented in
+[OPENING_DIRECTIONS.md](../OPENING_DIRECTIONS.md). Do not apply the neutral task-driven
+direction below to new reaction hooks; retain it as context for the earlier experiments.
+
+This direction was tested for everyday UGC scene generations. The mundane physical task
 should carry the clip; do not add a separate reaction for the viewer.
 
 Her attention stays primarily on the task she is performing. Do not make her repeatedly look

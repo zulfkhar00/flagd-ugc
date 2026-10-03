@@ -50,6 +50,8 @@ class FakeProvider:
 
 @pytest.fixture
 def media_checks(monkeypatch):
+    # This fixture replaces every media operation; unit tests need no FFmpeg binary.
+    monkeypatch.setattr("flagd_ugc.animation_lab.require_media_tools", lambda: None)
     monkeypatch.setattr(
         "flagd_ugc.animation_lab.validate_vertical_asset", lambda path: (720, 1280)
     )

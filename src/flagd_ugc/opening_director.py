@@ -1,9 +1,8 @@
-"""Deterministic, date-rotated task direction for daily self-shot opening clips.
+"""Persisted silent reaction directions for daily self-shot opening clips.
 
-The copy format and task are chosen before generation and persisted with the video. This
-module maps the format and batch date to a concrete task, setting and wardrobe. It does not
-ask a model to invent an action or perform a separate reaction for the viewer. Persisted
-legacy reaction directions remain readable for existing batches that need to resume.
+The copy planner chooses an expressive reaction to match the caption and approved demo.
+Settings and wardrobes rotate by date. Older task and reaction recipes remain readable
+so a restart never silently replaces an already planned video.
 """
 
 from __future__ import annotations
@@ -12,6 +11,14 @@ from dataclasses import dataclass
 
 from .errors import QualityError
 from .hook_formats import hook_format_keys
+from .reaction_openings import (
+    HOOK_REACTIONS,
+    LEGACY_HOOK_REACTIONS,
+    REACTION_SCENES,
+    get_active_hook_reaction,
+    get_hook_reaction,
+    get_reaction_scene,
+)
 from .reactions import get_reaction
 from .scenarios import get_scenario
 from .task_scenes import TASK_SCENES, get_task_scene, task_scene_keys
@@ -30,8 +37,18 @@ class OpeningDirection:
     reaction_key: str | None = None
     visual_hook_key: str | None = None
     task_key: str | None = None
+    reaction_scene_key: str | None = None
 
     def __post_init__(self) -> None:
+        if self.reaction_scene_key:
+            if self.scenario_key or self.visual_hook_key or self.task_key:
+                raise ValueError("a daily reaction cannot also select a legacy treatment")
+            if not self.reaction_key:
+                raise ValueError("a daily reaction opening needs a reaction")
+            get_reaction_scene(self.reaction_scene_key)
+            get_hook_reaction(self.reaction_key)
+            get_wardrobe(self.wardrobe_key)
+            return
         if self.task_key:
             if self.scenario_key or self.reaction_key or self.visual_hook_key:
                 raise ValueError(
@@ -53,6 +70,15 @@ class OpeningDirection:
 
     def scene_prompt(self) -> str:
         """Return the fully specified frame-zero prompt for Nano Banana Pro."""
+        if self.reaction_scene_key:
+            assert self.reaction_key is not None
+            reaction = get_hook_reaction(self.reaction_key)
+            scene = get_reaction_scene(self.reaction_scene_key)
+            return (
+                f"DAILY REACTION OPENING: {scene.label}. The planned animation is a "
+                f"{reaction.label}; capture its {'onset' if reaction.expressive else 'relaxed starting expression'}.\n\n"
+                f"{scene.scene_prompt(expressive=reaction.expressive)}"
+            )
         if self.task_key:
             task = get_task_scene(self.task_key)
             return (
@@ -70,12 +96,15 @@ class OpeningDirection:
         )
 
     def motion_prompt(self) -> str:
-        """Return the chosen silent task continuation for Kling or a legacy performance.
+        """Return one expressive reaction or a persisted legacy continuation.
 
         The input still is the authority for the actual room, outfit, framing and starting
-        posture. The task direction controls only the three-second continuation and does
+        posture. The direction controls only the three-second continuation and does
         not replace the visual information in the starting frame.
         """
+        if self.reaction_scene_key:
+            assert self.reaction_key is not None
+            return get_hook_reaction(self.reaction_key).motion_prompt()
         if self.task_key:
             performance = get_task_scene(self.task_key).motion_prompt()
             return (
@@ -97,6 +126,8 @@ class OpeningDirection:
     @property
     def allow_hand_entry(self) -> bool:
         """Whether the planned free-hand gesture needs fal's hand-entry allowance."""
+        if self.reaction_scene_key:
+            return False
         if self.task_key:
             return False
         if self.visual_hook_key:
@@ -169,31 +200,57 @@ TASK_OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
     for hook_format in hook_format_keys()
     for task in TASK_SCENES
 )
-_TASK_BY_FORMAT_AND_SCENE = {
-    (item.hook_format, item.task_key): item for item in TASK_OPENING_DIRECTIONS
-}
 _TASK_BY_KEY = {item.key: item for item in TASK_OPENING_DIRECTIONS}
 _LEGACY_BY_KEY = {item.key: item for item in LEGACY_OPENING_DIRECTIONS}
-OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
-    _TASK_BY_FORMAT_AND_SCENE[
-        (hook_format, task_scene_keys()[index % len(task_scene_keys())])
-    ]
-    for index, hook_format in enumerate(hook_format_keys())
+REACTION_OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
+    OpeningDirection(
+        key=f"reaction-{hook_format}-{scene.key}-{reaction.key}-v2",
+        hook_format=hook_format,
+        scenario_key=None,
+        wardrobe_key=scene.wardrobe_key,
+        reaction_key=reaction.key,
+        reaction_scene_key=scene.key,
+    )
+    for hook_format in hook_format_keys()
+    for scene in REACTION_SCENES
+    for reaction in HOOK_REACTIONS
 )
+ARCHIVED_REACTION_OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
+    OpeningDirection(
+        key=f"reaction-{hook_format}-{scene.key}-{reaction.key}-v1",
+        hook_format=hook_format,
+        scenario_key=None,
+        wardrobe_key=scene.wardrobe_key,
+        reaction_key=reaction.key,
+        reaction_scene_key=scene.key,
+    )
+    for hook_format in hook_format_keys()
+    for scene in REACTION_SCENES
+    for reaction in LEGACY_HOOK_REACTIONS
+)
+_REACTION_BY_KEY = {
+    item.key: item for item in (*ARCHIVED_REACTION_OPENING_DIRECTIONS, *REACTION_OPENING_DIRECTIONS)
+}
+_REACTION_BY_TREATMENT = {
+    (item.hook_format, item.reaction_scene_key, item.reaction_key): item
+    for item in REACTION_OPENING_DIRECTIONS
+}
 
 if len(TASK_OPENING_DIRECTIONS) != len(hook_format_keys()) * len(task_scene_keys()):
     raise RuntimeError("task opening direction matrix is incomplete")
 
 
 def get_opening_direction(key: str) -> OpeningDirection:
-    direction = _TASK_BY_KEY.get(key) or _LEGACY_BY_KEY.get(key)
+    direction = (
+        _REACTION_BY_KEY.get(key) or _TASK_BY_KEY.get(key) or _LEGACY_BY_KEY.get(key)
+    )
     if direction is None:
         raise QualityError(f"unknown opening direction {key!r}")
     return direction
 
 
 def direction_for_hook_format(
-    hook_format: str, *, rotation: int = 0
+    hook_format: str, *, rotation: int = 0, reaction_key: str = "shocked"
 ) -> OpeningDirection:
     formats = hook_format_keys()
     try:
@@ -202,9 +259,15 @@ def direction_for_hook_format(
         raise QualityError(
             f"no approved opening direction for hook format {hook_format!r}"
         ) from exc
-    task_key = task_scene_keys()[(rotation + format_index) % len(task_scene_keys())]
-    return _TASK_BY_FORMAT_AND_SCENE[(hook_format, task_key)]
+    reaction = get_active_hook_reaction(reaction_key)
+    scene = REACTION_SCENES[(rotation + format_index) % len(REACTION_SCENES)]
+    return _REACTION_BY_TREATMENT[(hook_format, scene.key, reaction.key)]
+
+
+OPENING_DIRECTIONS: tuple[OpeningDirection, ...] = tuple(
+    direction_for_hook_format(hook_format) for hook_format in hook_format_keys()
+)
 
 
 def opening_direction_keys() -> tuple[str, ...]:
-    return tuple(item.key for item in TASK_OPENING_DIRECTIONS)
+    return tuple(item.key for item in REACTION_OPENING_DIRECTIONS)

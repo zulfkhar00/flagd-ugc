@@ -115,6 +115,7 @@ def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path):
                                                     "hook_format": "when",
                                                     "hook": "when i get the feedback",
                                                     "title": "the practice date feedback",
+                                                    "reaction_key": "shocked",
                                                 }
                                             ]
                                         )
@@ -155,12 +156,17 @@ def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path):
             "hook_format": "when",
             "hook": "when i get the feedback",
             "title": "the practice date feedback",
+            "reaction_key": "shocked",
         }
     ]
     prompt = requests[0]["contents"][0]["parts"][0]["text"]
     assert '"hook_format": "when"' in prompt
     assert '"title"' in prompt
     assert "Start exactly with `when `" in prompt
+    assert "silently reacting beneath the text overlay" in prompt
+    review_prompt = requests[1]["contents"][0]["parts"][0]["text"]
+    assert '"reaction_key": "shocked"' in review_prompt
+    assert "fits the overlay and actual demo outcome" in review_prompt
     assert len(requests) == 2
 
 
@@ -216,6 +222,87 @@ def test_visual_review_requires_self_shot_and_rejects_branched_limbs(tmp_path):
     assert "plausible camera-bearing arm" in prompt
     assert "branched limb" in prompt
     assert "25+" not in prompt
+
+
+@pytest.mark.parametrize("matches", [True, False])
+@pytest.mark.parametrize("reaction_key", ["amused", "shocked"])
+def test_reaction_animation_review_requires_the_planned_expression(tmp_path, matches, reaction_key):
+    requests = []
+    review = {
+        "passed": True,
+        "consistent": True,
+        "defect_free": True,
+        "self_shot": True,
+        "reaction_matches": matches,
+        "reason": "ok" if matches else "face stayed static instead of reacting",
+    }
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        return httpx.Response(200, json={"candidates": [{"content": {
+            "parts": [{"text": json.dumps(review)}]
+        }}]})
+
+    frame = tmp_path / "frame.png"
+    frame.write_bytes(b"\x89PNG\r\n\x1a\nimage")
+    provider = GeminiProvider(
+        "secret",
+        text_model="gemini-3.6-flash",
+        image_model="gemini-3-pro-image",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    if matches:
+        assert provider.review_visual(
+            [frame], [frame], kind="opening animation", reaction_key=reaction_key
+        )["reaction_matches"] is True
+    else:
+        with pytest.raises(QualityError, match="face stayed static"):
+            provider.review_visual(
+                [frame], [frame], kind="opening animation", reaction_key=reaction_key
+            )
+    prompt = requests[0]["contents"][0]["parts"][0]["text"]
+    assert '"reaction_matches": boolean' in prompt
+    if reaction_key == "amused":
+        assert "small suppressed smile" in prompt
+        assert "Do not reject a small closed-mouth smile" in prompt
+    else:
+        assert "wide-eyed silent jaw-drop" in prompt
+        assert "Do not mistake a single silent gasp shape for speech" in prompt
+        assert "Reject a neutral or barely changing face" in prompt
+        assert "Lips should remain closed" not in prompt
+
+
+def test_hook_review_can_reject_an_emotion_that_contradicts_the_demo(tmp_path):
+    requests = []
+    item = {
+        "demo_file": "demo.mp4",
+        "hook_format": "when",
+        "hook": "when my practice date goes badly",
+        "title": "the negative date feedback",
+        "reaction_key": "excited",
+    }
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        result = [item] if len(requests) == 1 else {
+            "passed": False, "reason": "excited reaction contradicts the failed date"
+        }
+        return httpx.Response(200, json={"candidates": [{"content": {
+            "parts": [{"text": json.dumps(result)}]
+        }}]})
+
+    provider = GeminiProvider(
+        "secret",
+        text_model="gemini-3.6-flash",
+        image_model="gemini-3-pro-image",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    with pytest.raises(QualityError, match="contradicts the failed date"):
+        provider.generate_hooks(
+            [Demo(tmp_path / "demo.mp4", "The app gives negative feedback after a failed simulated date.")],
+            formats=[get_hook_format("when")],
+        )
+    assert len(requests) == 2
 
 
 def test_kling_persists_submitted_task_and_downloads_result(tmp_path):

@@ -333,7 +333,8 @@ class FalKlingProvider:
             "face morph, identity change, deformed face, deformed hands, extra "
             "fingers, extra limbs, warped body, duplicate person, camera cut, "
             "scene change, text, logo, beauty filter, plastic skin, talking, "
-            "speaking, lip-sync, silent mouthing, phoneme mouth shapes"
+            "speaking, lip-sync, silent mouthing, phoneme mouth shapes, "
+            "visible phone, mirror selfie, camera equipment"
         )
         if not allow_hand_entry:
             negative_prompt += ", hand entering frame"

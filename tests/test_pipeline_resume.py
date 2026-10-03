@@ -10,6 +10,7 @@ from flagd_ugc.db import Database
 from flagd_ugc.errors import ProviderError, ProxyBlockError, QualityError, TransientError
 from flagd_ugc.fal_provider import FalJob
 from flagd_ugc.media import ProbeResult
+from flagd_ugc.opening_director import get_opening_direction
 from flagd_ugc.pipeline import Pipeline
 
 
@@ -18,6 +19,8 @@ class FakeGemini:
         self.hook_calls = 0
         self.scene_calls = 0
         self.review_calls = 0
+        self.review_reactions = []
+        self.review_frame_counts = []
 
     def generate_hooks(self, demos, *, formats):
         self.hook_calls += 1
@@ -46,6 +49,7 @@ class FakeGemini:
                 "hook_format": formats[0].key,
                 "title": title,
                 "demo_path": str(demos[0].path),
+                "reaction_key": "shocked",
             }
         ]
 
@@ -54,8 +58,10 @@ class FakeGemini:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"scene")
 
-    def review_visual(self, images, references, *, kind):
+    def review_visual(self, images, references, *, kind, reaction_key=None):
         self.review_calls += 1
+        self.review_reactions.append(reaction_key)
+        self.review_frame_counts.append(len(images))
         return {
             "passed": True,
             "adult": True,
@@ -341,7 +347,8 @@ def test_completed_stages_are_not_generated_or_delivered_twice(tmp_path, monkeyp
     (settings.demos_dir / "demo.mp4").write_bytes(b"demo")
     settings.font_file.write_bytes(b"font")
 
-    def fake_frames(video, output_dir, count=3):
+    def fake_frames(video, output_dir, count=3, *, fps=1):
+        assert count / fps == 3
         output_dir.mkdir(parents=True, exist_ok=True)
         paths = []
         for index in range(count):
@@ -394,7 +401,8 @@ def test_empty_music_bank_does_not_block_silent_generation(tmp_path, monkeypatch
         "flagd_ugc.pipeline.validate_vertical_asset", lambda path: (1080, 1920)
     )
     # The fake reviewer needs readable paths even though no real media is rendered.
-    def fake_frames(_video, output_dir, count=3):
+    def fake_frames(_video, output_dir, count=3, *, fps=1):
+        assert count / fps == 3
         output_dir.mkdir(parents=True, exist_ok=True)
         paths = [output_dir / f"frame-{index}.jpg" for index in range(count)]
         for path in paths:
@@ -443,7 +451,8 @@ def test_submitted_fal_job_resumes_without_a_second_paid_submission(tmp_path, mo
     (settings.demos_dir / "demo.mp4").write_bytes(b"demo")
     settings.font_file.write_bytes(b"font")
 
-    def fake_frames(_video, output_dir, count=3):
+    def fake_frames(_video, output_dir, count=3, *, fps=1):
+        assert count / fps == 3
         output_dir.mkdir(parents=True, exist_ok=True)
         paths = [output_dir / f"frame-{index}.jpg" for index in range(count)]
         for path in paths:
@@ -535,16 +544,18 @@ def test_daily_batch_creates_four_distinct_silent_videos_and_delivers_titles(
         def generate_hooks(self, demos, *, formats):
             self.hook_calls += 1
             hooks = {
-                "scorecard": "rating the chat: 43/100",
-                "inner-thought": "i did not expect that feedback",
+                "when": "when i get the feedback",
                 "pov": "pov: the feedback explained it",
-                "quote-receipt": "nailed it",
+                "reaction-meme": "my face when i get feedback",
+                "inner-thought": "i did not expect that feedback",
+                "direct-observation": "that feedback humbled me",
             }
             titles = {
-                "scorecard": "the 43 conversation score",
-                "inner-thought": "the unexpected feedback",
+                "when": "the feedback moment",
                 "pov": "the practice date result",
-                "quote-receipt": "his texting confidence",
+                "reaction-meme": "the feedback reaction",
+                "inner-thought": "the unexpected feedback",
+                "direct-observation": "the conversation feedback",
             }
             return [
                 {
@@ -552,11 +563,13 @@ def test_daily_batch_creates_four_distinct_silent_videos_and_delivers_titles(
                     "hook_format": format.key,
                     "hook": hooks[format.key],
                     "title": titles[format.key],
+                    "reaction_key": "shocked",
                 }
                 for demo, format in zip(demos, formats, strict=True)
             ]
 
-    def fake_frames(_video, output_dir, count=3):
+    def fake_frames(_video, output_dir, count=3, *, fps=1):
+        assert count == 6 and fps == 2
         output_dir.mkdir(parents=True, exist_ok=True)
         paths = [output_dir / f"frame-{index}.jpg" for index in range(count)]
         for path in paths:
@@ -602,8 +615,13 @@ def test_daily_batch_creates_four_distinct_silent_videos_and_delivers_titles(
     assert composer.music == [None, None, None, None]
     assert validations == [False, False, False, False]
     assert [item[2] for item in telegram.documents] == [row["title"] for row in videos]
-    assert "title: the 43 conversation score" in telegram.messages[0][1]
+    assert "title: the feedback reaction" in telegram.messages[0][1]
     assert "opening text:" in telegram.messages[0][1]
     assert len(telegram.documents) == 4
     assert len(telegram.messages) == 1
     assert (gemini.hook_calls, gemini.scene_calls, kling.calls, composer.calls) == (1, 4, 4, 4)
+    assert all(get_opening_direction(row["opening_direction"]).reaction_scene_key for row in videos)
+    assert all("silent front-camera reaction hook" in prompt for prompt in kling.motion_prompts)
+    assert all(duration == 3 and not allow_hand_entry for _, duration, allow_hand_entry in kling.submitted_jobs)
+    assert gemini.review_reactions == ["shocked"] * 8
+    assert gemini.review_frame_counts == [1, 6] * 4

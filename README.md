@@ -12,9 +12,9 @@ avoid bursts through managed HTTPS proxies and can be reviewed in Telegram later
 Each result contains:
 
 - 0–3 seconds: an approved synthetic character in a natural, handheld front-camera opening,
-  doing a mundane task with task-focused gaze, a neutral face and posture that follows the
-  action; the task, wardrobe and truthful on-camera-perspective hook are persisted and
-  safety-reviewed before generation;
+  giving one strong, instantly readable silent facial reaction beneath a POV, "when", "my face when",
+  inner-thought or plain reaction text overlay. The caption and matching emotion are planned
+  together; the reaction, setting and wardrobe are persisted before image/video generation;
 - 3–15 seconds: the matching approved flagd demonstration;
 - no audio, so the uploader can select platform-native sound manually.
 
@@ -95,9 +95,10 @@ The approved rotation, copy grammars, score guardrail and caption layouts are do
 [HOOK_FORMATS.md](HOOK_FORMATS.md). `compose-lab --hook-format` renders any one of those layouts
 without paid providers or delivery.
 
-The daily pipeline uses the persisted, date-rotated task and wardrobe recipes in
-[OPENING_DIRECTIONS.md](OPENING_DIRECTIONS.md). A task carries the opening; the character
-does not perform a separate reaction for the viewer.
+The daily pipeline uses the expressive reaction recipes and date-rotated settings in
+[OPENING_DIRECTIONS.md](OPENING_DIRECTIONS.md). The opening has one silent facial beat that
+matches the overlay and subsequent demo, with ordinary blinking, body settling and handheld
+wrist drift. The animation review checks six frames for the intended reaction and defects.
 
 ### Local four-video batch preview
 

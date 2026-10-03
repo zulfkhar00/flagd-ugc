@@ -46,7 +46,7 @@ def test_scenario_pose_instructions_are_materially_different():
     assert "reclining diagonally" in get_scenario("bed-reclined").scene_prompt()
     assert "desk chair" in get_scenario("desk-chair").scene_prompt()
     assert "mid-step" in get_scenario("city-walk").scene_prompt()
-    assert "passing naturally through the open doorway" in get_scenario(
+    assert "walked into the entry area of a normal contemporary American apartment" in get_scenario(
         "doorway-backout"
     ).scene_prompt()
     assert "starts getting out of her chair" in get_scenario(

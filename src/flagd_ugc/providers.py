@@ -18,8 +18,14 @@ from .camera_style import (
     with_handheld_scene,
 )
 from .errors import ProviderError, QualityError, TransientError
-from .hook_formats import HOOK_FORMATS, HookFormat, get_hook_format, visible_hook_text
+from .hook_formats import (
+    REACTION_HOOK_FORMATS,
+    HookFormat,
+    get_hook_format,
+    visible_hook_text,
+)
 from .hooks import validate_hook, validate_title
+from .reaction_openings import HOOK_REACTIONS, get_active_hook_reaction, get_hook_reaction
 
 
 def _json_from_text(text: str) -> Any:
@@ -177,9 +183,9 @@ class GeminiProvider:
         *,
         formats: list[HookFormat] | tuple[HookFormat, ...] | None = None,
     ) -> list[dict[str, str]]:
-        """Generate grounded copy for pre-assigned, distinct caption formats."""
+        """Plan grounded reaction overlays and their matching silent expressions together."""
         assigned_formats = tuple(
-            HOOK_FORMATS[: len(demos)] if formats is None else formats
+            REACTION_HOOK_FORMATS[: len(demos)] if formats is None else formats
         )
         if len(assigned_formats) != len(demos):
             raise ValueError("each hook demo needs exactly one assigned format")
@@ -195,9 +201,16 @@ class GeminiProvider:
             }
             for demo, format_definition in zip(demos, assigned_formats, strict=True)
         ]
+        reactions = [
+            {"reaction_key": reaction.key, "use_for": reaction.copy_context}
+            for reaction in HOOK_REACTIONS
+        ]
         prompt = f"""
 You create truthful short opening hooks for flagd, an app whose exact behavior is described
 only by the supplied approved demonstration descriptions. Write exactly one hook for each demo.
+The video opens with three seconds of a woman silently reacting beneath the text overlay,
+then cuts immediately to the matching app demo. The overlay creates the relatable situation;
+she does not speak, narrate, perform a household task or demonstrate the app in the opening.
 Each hook must:
 - use the exact assigned hook_format and obey its format_rule; the on-camera woman is the
   narrator, but familiar TikTok shorthand such as POV or `when ...` need not use I/me/my;
@@ -206,6 +219,19 @@ Each hook must:
 - make no guarantee, medical claim, invented result, or claim unsupported by its demo;
 - contain no emoji, hashtag, CTA, stage direction, logo, or brand claim;
 - never invent a score. A scorecard can use only the exact number stated in its demo description.
+- describe a specific relatable situation or thought that explains her reaction; avoid
+  generic UI labels, summaries of a screen, or technical descriptions of app functionality.
+- let the subsequent demo substantiate the situation. Do not imply an actual partner sent
+  a message when the demo is a simulated conversation or exercise.
+
+Choose one reaction_key from the approved list for each overlay. The reaction must match the
+meaning and tone of that exact hook and its demo. Do not assign relief or a win to a failed
+result, or embarrassment to a successful result unless the overlay clearly explains the irony.
+For browsing/practice-only demos, react to that situation without inventing later feedback.
+Prefer varied reactions when the demo grounding allows it. Never invent a new reaction key.
+All new hooks need a strong, instantly readable expression: shock, disbelief, laughter,
+cringe or excited surprise. Never select a casual neutral glance, tiny smirk or subtle reaction.
+Approved reactions: {json.dumps(reactions, ensure_ascii=False)}
 
 Also provide a separate upload title for every item. A title must:
 - contain 3–8 lower-case words;
@@ -213,7 +239,8 @@ Also provide a separate upload title for every item. A title must:
 - be distinct from the on-video hook and grounded only in the matching demo description;
 - contain no emoji, hashtag, CTA, URL, quotation marks, invented score, or engagement claim.
 
-Return only a JSON array of objects with exactly these keys: "demo_file", "hook_format", "hook", "title".
+Return only a JSON array of objects with exactly these keys:
+"demo_file", "hook_format", "hook", "title", "reaction_key".
 Use every supplied demo_file exactly once. Copy its filename and assigned hook_format exactly.
 For quote-receipt, return only the quote body; the renderer adds the quotation marks and `— him`.
 
@@ -233,10 +260,12 @@ Approved demonstrations:
         for item in payload:
             if not isinstance(item, dict):
                 raise QualityError("hook response contains a non-object")
-            if set(item) != {"demo_file", "hook_format", "hook", "title"}:
+            if set(item) != {"demo_file", "hook_format", "hook", "title", "reaction_key"}:
                 raise QualityError(
-                    "hook response must contain only demo_file, hook_format, hook, title"
+                    "hook response must contain only demo_file, hook_format, hook, "
+                    "title, reaction_key"
                 )
+            reaction = get_active_hook_reaction(str(item["reaction_key"]))
             filename = str(item.get("demo_file", ""))
             if filename not in allowed or filename in seen:
                 raise QualityError("hook response changed or repeated a demo filename")
@@ -271,6 +300,7 @@ Approved demonstrations:
                     "hook": hook,
                     "hook_format": format_key,
                     "title": title,
+                    "reaction_key": reaction.key,
                 }
             )
         self.review_hooks(
@@ -290,6 +320,8 @@ Approved demonstrations:
                 ).prompt_rule,
                 "demo_file": Path(item["demo_path"]).name,
                 "demo_description": descriptions[Path(item["demo_path"]).name],
+                "reaction_key": item["reaction_key"],
+                "reaction_context": get_hook_reaction(item["reaction_key"]).copy_context,
             }
             for item in hooks
         ]
@@ -301,6 +333,11 @@ result, fabricated engagement, CTA, or unsafe claim. Titles must be neutral lowe
 labels of 3–8 words, rather than a rewrite of the opening hook. The content is suitable for a
 general adult audience.
 The on-camera adult woman is the narrator even when the short-form format omits I/me.
+The opening is a silent facial reaction with an overlay, followed by the demo. Verify that
+each hook sets up a relatable reaction, rather than just naming a UI screen. Check that the
+chosen reaction_key fits the overlay and actual demo outcome; do not approve a contradicted
+win/failure or an invented real-world message. An emotion is editorial context, not a claim
+that the app measures the woman's feelings. Browsing-only demos cannot support result claims.
 Return only JSON: {{"passed": boolean, "reason": string}}. Set passed false if any item fails.
 
 Items: {json.dumps(review_items, ensure_ascii=False)}
@@ -333,8 +370,8 @@ Create a photorealistic vertical 9:16 UGC opening frame featuring the exact same
 woman shown in the supplied approved character references. The result is the live view from
 the phone's front-facing camera while she holds that phone herself at arm's length; the phone
 cannot appear because it is the camera producing the image. Match her facial structure, hair,
-skin tone and defining features precisely. Use a realistic, lived-in setting, natural phone-
-camera lighting and believable anatomy. No logos, text, captions, UI, extra people, extra
+skin tone, everyday makeup and defining features precisely. Use a realistic, lived-in setting,
+natural phone-camera lighting and believable anatomy. No logos, text, captions, UI, extra people, extra
 fingers, distorted hands, warped objects or sexualized styling. Leave the top safe area clear
 for a caption that will be added later.
 
@@ -393,8 +430,45 @@ The following approved app demo shows: {demo_description}
         _atomic_bytes(output, decoded)
 
     def review_visual(
-        self, images: list[Path], references: list[Path], *, kind: str
+        self,
+        images: list[Path],
+        references: list[Path],
+        *,
+        kind: str,
+        reaction_key: str | None = None,
     ) -> dict[str, Any]:
+        reaction_instruction = ""
+        reaction_fields = ""
+        if reaction_key:
+            reaction = get_hook_reaction(reaction_key)
+            performance_review = (
+                "For animation frames in time order, require a strong, clearly readable "
+                "reaction with natural head/shoulder involvement. Reject a neutral or "
+                "barely changing face, faint smirk, or casual low-amplitude expression. "
+                "A silent jaw-drop, open mouth, visible teeth, broad grin or brief "
+                "body recoil is allowed when it fits this reaction. Do not mistake "
+                "a single silent gasp shape for speech. Reject repeated phoneme-like "
+                "mouth changes, cartoon facial distortion, identity drift, or a "
+                "sequence of unrelated emotional performances.\n"
+                if reaction.expressive
+                else
+                "For animation frames in time order, require a visible but restrained "
+                "change consistent with the planned reaction. Reject a static face "
+                "throughout, a sequence of different emotional performances, or "
+                "exaggerated facial distortion. Lips should remain closed or gently at "
+                "rest; reject repeated apparent speech-like mouth shapes. Do not reject "
+                "a small closed-mouth smile when amusement or pleasure is planned.\n"
+            )
+            reaction_instruction = (
+                f"\nThis is a silent reaction hook. Planned reaction: {reaction.label}. "
+                f"Expected movement: {reaction.movement}\n"
+                "Keep a believable contemporary U.S. environment and candid phone framing. "
+                "The starting still may be relaxed; do not require the finished expression "
+                "in the still. "
+                f"{performance_review}"
+            )
+            if "animation" in kind:
+                reaction_fields = ', "reaction_matches": boolean'
         prompt = f"""
 Review this synthetic {kind} for production use. The first supplied image(s) are generated
 content; the final supplied images labeled by order are approved character references.
@@ -406,8 +480,9 @@ branched limb, extra arm, extra hand, deformed face, malformed fingers, extra di
 duplicate person, text, unsafe content, or other visible generation defect. For animation
 frames, identity, anatomy and the self-shot camera relationship must hold across every frame.
 Be strict.
+{reaction_instruction}
 Return only JSON with exactly: {{"passed": boolean, "consistent": boolean,
-"defect_free": boolean, "self_shot": boolean, "reason": string}}.
+"defect_free": boolean, "self_shot": boolean{reaction_fields}, "reason": string}}.
 """.strip()
         parts: list[dict[str, Any]] = [{"text": prompt}]
         parts.extend(_inline_image(path) for path in images)
@@ -421,6 +496,8 @@ Return only JSON with exactly: {{"passed": boolean, "consistent": boolean,
         text = "".join(str(part.get("text", "")) for part in self._parts(payload))
         review = _json_from_text(text)
         required = ("passed", "consistent", "defect_free", "self_shot")
+        if reaction_fields:
+            required += ("reaction_matches",)
         if not isinstance(review, dict) or any(
             review.get(key) is not True for key in required
         ):

@@ -65,9 +65,10 @@ HOOK_FORMATS: tuple[HookFormat, ...] = (
         name="POV",
         prompt_rule=(
             "Start exactly with `pov:`. Follow it with a compact, specific first-person "
-            "or observational payoff supported by the demo."
+            "or observational situation that explains a silent facial reaction and is "
+            "supported by the demo."
         ),
-        example="pov: he thought he had game until this",
+        example="pov: practicing the reply before i send it",
     ),
     HookFormat(
         key="quote-receipt",
@@ -87,16 +88,17 @@ HOOK_FORMATS: tuple[HookFormat, ...] = (
             "Start exactly with `when ` and describe the immediate situation that causes "
             "the on-camera reaction."
         ),
-        example="when he says he's good at texting",
+        example="when the feedback calls out my opener",
     ),
     HookFormat(
         key="direct-observation",
         name="Direct observation",
         prompt_rule=(
-            "Write one plain, lower-case observation. Do not start with `pov:`, `when`, "
+            "Write one plain, lower-case reaction caption about a relatable moment, "
+            "not a UI label. Do not start with `pov:`, `when`, "
             "`my face when`, `rating`, or `i `."
         ),
-        example="the 43/100 explained a lot",
+        example="that feedback humbled me",
     ),
     HookFormat(
         key="reaction-meme",
@@ -129,6 +131,13 @@ HOOK_FORMATS: tuple[HookFormat, ...] = (
 )
 
 _BY_KEY = {item.key: item for item in HOOK_FORMATS}
+
+# Retain every old grammar/layout for resumed batches and compose-lab, but new daily
+# plans use reaction-oriented overlays rather than a score label or attributed quote.
+REACTION_HOOK_FORMATS: tuple[HookFormat, ...] = tuple(
+    _BY_KEY[key]
+    for key in ("pov", "when", "reaction-meme", "inner-thought", "direct-observation")
+)
 
 
 def hook_format_keys() -> tuple[str, ...]:
@@ -251,8 +260,8 @@ def validate_formatted_hook(
 
 def hook_format_cycle(run_date: date) -> tuple[HookFormat, ...]:
     """A stable daily rotation; resume never changes the intended format order."""
-    start = run_date.toordinal() % len(HOOK_FORMATS)
-    return HOOK_FORMATS[start:] + HOOK_FORMATS[:start]
+    start = run_date.toordinal() % len(REACTION_HOOK_FORMATS)
+    return REACTION_HOOK_FORMATS[start:] + REACTION_HOOK_FORMATS[:start]
 
 
 def assign_hook_formats(
@@ -260,15 +269,16 @@ def assign_hook_formats(
 ) -> list[tuple[Demo, HookFormat]]:
     """Give each selected demo a different approved caption format.
 
-    Scorecards require the precise score in the reviewed description; inner thoughts require
-    visible feedback or a result. Unsupported formats are skipped. The ordering is date-stable
+    Inner thoughts require visible feedback or a result; the plain reaction caption can
+    fill its place when only browsing/practice demos are available. The ordering is date-stable
     and the demo pick is deterministic, so a text retry has the same grounding inputs.
     """
     if count < 1:
         raise ValueError("hook format count must be positive")
-    if count > len(HOOK_FORMATS):
+    if count > len(REACTION_HOOK_FORMATS):
         raise QualityError(
-            f"need {count} distinct hook formats but only {len(HOOK_FORMATS)} are approved"
+            f"need {count} distinct hook formats but only "
+            f"{len(REACTION_HOOK_FORMATS)} are approved for daily reactions"
         )
     remaining = sorted(demos, key=lambda demo: str(demo.path))
     if len(remaining) < count:

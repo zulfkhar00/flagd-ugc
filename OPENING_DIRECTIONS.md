@@ -1,26 +1,51 @@
 # Daily opening directions
 
-`opening_director.py` deterministically maps each approved caption format and batch date to a
-self-shot mundane task. The direction is written to SQLite before Nano Banana Pro or Kling is
-called, so a retry or restart cannot silently change the setting, outfit, or action. The four
-videos in a batch always use four distinct tasks; assignments rotate across days.
+Every new daily video opens with a three-second silent reaction and a text overlay, then cuts
+to the matching approved app demo. Gemini plans the caption and one approved reaction together;
+the copy review checks that the emotion fits the overlay and the actual demo outcome.
 
-| Task | Setting | Wardrobe |
+`opening_director.py` combines that reaction with a date-rotated setting and wardrobe, and
+writes the versioned direction to SQLite before Nano Banana Pro or Kling is called. Four
+distinct caption formats give four distinct settings in a daily batch. A restart reuses the
+stored direction, frame and animation request rather than selecting a new expression.
+
+| Reaction | Treatment |
+| --- | --- |
+| shocked | wide eyes, clear eyebrow rise, silent jaw-drop and small recoil |
+| disbelief | strong incredulous expression and slight chin recoil |
+| laughing | broad amused grin and one natural shoulder movement |
+| cringing | visible wince, awkward grimace and coupled upper-body recoil |
+| excited | bright wide eyes, delighted grin and spontaneous slight lean forward |
+
+| Scene | Setting | Wardrobe |
 | --- | --- | --- |
-| straighten the duvet | American apartment bedroom | charcoal hoodie |
-| tie a sneaker | American apartment entryway | heather lilac tee |
-| fold a throw over a sofa | American apartment living room | forest sweatshirt |
-| wipe the counter | American apartment kitchen | rust striped tee |
-| look through a kitchen drawer | American apartment kitchen | navy tee |
-| fold a towel | American apartment laundry area | cream knit |
-| put groceries away | American apartment kitchen | burgundy long sleeve |
-| settle the seatbelt | safely parked U.S. car | olive street layers |
+| bed edge | American apartment bedroom | charcoal hoodie |
+| kitchen counter | contemporary American apartment kitchen | navy tee |
+| sofa | American apartment living room | forest sweatshirt |
+| entry | American apartment entryway | burgundy long sleeve |
+| bedroom chair | American apartment bedroom | heather lilac tee |
+| parked car | safely parked U.S. car | olive street layers |
+| laundry area | American apartment laundry closet | cream knit |
 
-All treatments are arm's-length phone-front-camera shots. They start with the task already in
-progress and continue it only slightly for one silent three-second excerpt. Her gaze stays on
-the task, her face remains neutral, and her head, shoulders and torso move with the task. The
-clip ends mid-action rather than resolving into a pose. Prompts reserve clear top space for the
-local caption overlay and forbid a visible phone or external camera.
+All new treatments are expressive self-shot front-camera clips. The starting frame captures the onset,
+readable upper shoulders, asymmetric phone framing and top space for the locally added caption.
+Preserve identity and everyday makeup, ordinary American interiors, contemporary clothing and
+practical room lighting. Do not make every belonging worn or every room messy.
 
-Prior persisted reaction-direction keys remain readable so partially completed older batches
-can resume with their original creative direction.
+Animate one strong emotion that is clearly readable within the first second. Head, shoulders
+and upper torso should respond naturally to that emotion. Never select a casual glance, faint
+smirk or tiny eyebrow twitch for a new hook. Keep natural blinking and irregular handheld
+wrist drift. No unrelated emotional sequence, cartoon distortion, hand-to-face gesture,
+household task, speech, lip-sync or silent mouthing. A single silent jaw-drop, visible teeth
+or a broad smile is allowed when it matches the chosen reaction. Cut while the reaction is
+still alive, before a neutral reset or posed ending. Kling audio generation is disabled, and
+FFmpeg strips all audio and shows the overlay only on the opening.
+
+Animation quality review samples six chronological frames at 2 FPS. It checks identity, anatomy,
+self-shot framing and a strong expression consistent with the chosen reaction. It rejects
+flat casual motion, repeated speech-like mouth shapes and generation defects; it accepts
+a believable silent gasp or broad grin. Quality retries keep their existing limits.
+
+New expressive recipes use v2 direction keys. Older casual v1, task and reaction direction keys remain readable so already planned batches resume with
+their original creative direction. Completed videos are not regenerated. This change needs
+the normal app redeploy; no new environment variables or database migration are required.

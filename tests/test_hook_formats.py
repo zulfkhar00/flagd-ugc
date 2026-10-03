@@ -7,6 +7,7 @@ from flagd_ugc.assets import Demo
 from flagd_ugc.errors import QualityError
 from flagd_ugc.hook_formats import (
     assign_hook_formats,
+    REACTION_HOOK_FORMATS,
     caption_plan,
     format_supports_demo,
     validate_formatted_hook,
@@ -33,18 +34,18 @@ def _demos() -> list[Demo]:
     ]
 
 
-def test_daily_assignment_uses_four_distinct_formats_and_keeps_scorecard_grounded():
+def test_daily_assignment_uses_four_distinct_reaction_overlays():
     assignments = assign_hook_formats(_demos(), 4, date(2026, 9, 18))
 
     assert [format_definition.key for _, format_definition in assignments] == [
-        "scorecard",
+        "reaction-meme",
         "inner-thought",
+        "direct-observation",
         "pov",
-        "quote-receipt",
     ]
     assert len({format_definition.key for _, format_definition in assignments}) == 4
-    scorecard_demo = assignments[0][0]
-    assert "score of 43 out of 100" in scorecard_demo.description
+    assert not {"scorecard", "quote-receipt"} & {fmt.key for _, fmt in assignments}
+    assert all(fmt in REACTION_HOOK_FORMATS for _, fmt in assignments)
 
 
 def test_scorecard_rejects_an_invented_or_ungrounded_number():
@@ -106,9 +107,9 @@ def test_october_first_inner_thought_is_not_assigned_to_discover():
     assignments = assign_hook_formats(_demos(), 4, date(2026, 10, 1))
 
     assert [fmt.key for _, fmt in assignments] == [
-        "reaction-meme", "scorecard", "inner-thought", "pov"
+        "pov", "when", "reaction-meme", "inner-thought"
     ]
-    inner_thought_demo = assignments[2][0]
+    inner_thought_demo = assignments[3][0]
     assert inner_thought_demo.path.name != "01-demo.mp4"
     assert format_supports_demo("inner-thought", inner_thought_demo.description)
     assert len({demo.path for demo, _ in assignments}) == 4

@@ -40,12 +40,12 @@ def test_hook_copy_dry_run_uses_four_distinct_formats_without_provider(tmp_path)
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert manifest["status"] == "dry-run"
     assert [item["hook_format"] for item in manifest["videos"]] == [
-        "scorecard",
+        "reaction-meme",
         "inner-thought",
+        "direct-observation",
         "pov",
-        "quote-receipt",
     ]
-    assert manifest["videos"][0]["title"] == "the 43 conversation score"
+    assert manifest["videos"][0]["title"] == "the practice date feedback"
     assert result.report_path.is_file()
 
 
@@ -56,16 +56,16 @@ def test_hook_copy_lab_writes_generated_copy_in_assignment_order(tmp_path):
     class Provider:
         def generate_hooks(self, demos, *, formats):
             samples = {
-                "scorecard": "rating the chat: 43/100",
+                "reaction-meme": "my face when i got the feedback",
                 "inner-thought": "i did not expect that feedback",
+                "direct-observation": "that feedback humbled me",
                 "pov": "pov: the feedback explained it",
-                "quote-receipt": "nailed it",
             }
             titles = {
-                "scorecard": "the 43 conversation score",
+                "reaction-meme": "the date feedback",
                 "inner-thought": "the unexpected feedback",
+                "direct-observation": "the conversation feedback",
                 "pov": "the practice date result",
-                "quote-receipt": "his texting confidence",
             }
             return list(
                 reversed(
@@ -88,16 +88,16 @@ def test_hook_copy_lab_writes_generated_copy_in_assignment_order(tmp_path):
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert manifest["status"] == "complete"
     assert [item["hook"] for item in manifest["videos"]] == [
-        "rating the chat: 43/100",
+        "my face when i got the feedback",
         "i did not expect that feedback",
+        "that feedback humbled me",
         "pov: the feedback explained it",
-        "nailed it",
     ]
     assert [item["title"] for item in manifest["videos"]] == [
-        "the 43 conversation score",
+        "the date feedback",
         "the unexpected feedback",
+        "the conversation feedback",
         "the practice date result",
-        "his texting confidence",
     ]
 
 
@@ -111,25 +111,25 @@ def test_hook_copy_lab_retries_a_format_quality_failure(tmp_path):
         def generate_hooks(self, _demos, *, formats):
             self.calls += 1
             if self.calls == 1:
-                raise QualityError("quote-receipt hook must fit on one short line")
+                raise QualityError("reaction does not fit the overlay")
             samples = {
-                "scorecard": "rating the chat: 43/100",
+                "reaction-meme": "my face when i got the feedback",
                 "inner-thought": "i did not expect that feedback",
+                "direct-observation": "that feedback humbled me",
                 "pov": "pov: the feedback explained it",
-                "quote-receipt": "nailed it",
             }
             titles = {
-                "scorecard": "the 43 conversation score",
+                "reaction-meme": "the date feedback",
                 "inner-thought": "the unexpected feedback",
+                "direct-observation": "the conversation feedback",
                 "pov": "the practice date result",
-                "quote-receipt": "his texting confidence",
             }
             return [
                 {
                     "demo_path": str(demo.path),
-                        "hook_format": format_definition.key,
-                        "hook": samples[format_definition.key],
-                        "title": titles[format_definition.key],
+                    "hook_format": format_definition.key,
+                    "hook": samples[format_definition.key],
+                    "title": titles[format_definition.key],
                 }
                 for demo, format_definition in zip(_demos, formats, strict=True)
             ]

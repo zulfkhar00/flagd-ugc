@@ -171,12 +171,22 @@ class Pipeline:
         chosen = [demo for demo, _ in assignments]
         formats = [format_definition for _, format_definition in assignments]
         max_quality_attempts = self.settings.quality_retries + 1
-        last_error: Exception | None = None
+        previous_stage = self.database.get_batch_stage(batch_id, "hooks")
+        last_error: Exception | None = (
+            QualityError(previous_stage["error"])
+            if previous_stage is not None
+            and previous_stage["status"] == "failed"
+            and previous_stage["error"]
+            else None
+        )
         for _ in range(max_quality_attempts):
             self.database.start_batch_stage(batch_id, "hooks")
             try:
+                generation_options: dict[str, Any] = {"formats": formats}
+                if last_error is not None:
+                    generation_options["review_feedback"] = str(last_error)
                 items = retry_transient(
-                    lambda: self.gemini.generate_hooks(chosen, formats=formats),
+                    lambda: self.gemini.generate_hooks(chosen, **generation_options),
                     retries=self.settings.transient_retries,
                 )
                 items = self._validate_assigned_hooks(
@@ -316,7 +326,24 @@ class Pipeline:
             if not can_review_existing:
                 attempts = int(scene_stage["attempts"]) if scene_stage else 0
                 if attempts >= self.settings.quality_retries + 1:
-                    raise QualityError("scene exhausted its quality retries")
+                    rejected = (
+                        scene_stage
+                        if scene_stage is not None and scene_stage["status"] == "failed"
+                        else review
+                    )
+                    reason = rejected["error"] if rejected is not None else None
+                    message = f"scene exhausted its quality retries ({attempts} attempts)"
+                    if reason:
+                        message += f". Last rejection: {reason}"
+                    raise QualityError(message)
+                rejected = (
+                    scene_stage
+                    if scene_stage is not None and scene_stage["status"] == "failed"
+                    else review
+                )
+                generation_options: dict[str, Any] = {"direction": direction.scene_prompt()}
+                if rejected is not None and rejected["status"] == "failed" and rejected["error"]:
+                    generation_options["review_feedback"] = str(rejected["error"])
                 self.database.start_video_stage(video_id, "scene", clear_metadata=True)
                 try:
                     retry_transient(
@@ -325,7 +352,7 @@ class Pipeline:
                             description,
                             references,
                             target,
-                            direction=direction.scene_prompt(),
+                            **generation_options,
                         ),
                         retries=self.settings.transient_retries,
                     )
@@ -351,8 +378,30 @@ class Pipeline:
                     retries=self.settings.transient_retries,
                 )
             except QualityError as exc:
+                previous = (
+                    json.loads(review["metadata_json"])
+                    if review is not None and review["metadata_json"]
+                    else {}
+                )
+                rejections = list(previous.get("rejections", []))
+                scene = self.database.get_video_stage(video_id, "scene")
+                attempt = int(scene["attempts"]) if scene else 0
+                rejections.append({"scene_attempt": attempt, "reason": str(exc)})
+                self.database.update_video_stage_metadata(
+                    video_id, "scene_review", {"rejections": rejections}
+                )
+                LOGGER.warning(
+                    "video %s scene attempt %s rejected: %s",
+                    video["ordinal"],
+                    attempt,
+                    exc,
+                )
                 self.database.fail_video_stage(video_id, "scene_review", str(exc))
                 continue
+            if review is not None and review["metadata_json"]:
+                rejections = json.loads(review["metadata_json"]).get("rejections")
+                if rejections:
+                    result = {**result, "rejections": rejections}
             self.database.complete_video_stage(
                 video_id, "scene_review", output_path=existing, metadata=result
             )

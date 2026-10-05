@@ -166,3 +166,77 @@ def test_already_planned_task_batch_resumes_without_switching_to_a_reaction(tmp_
     assert gemini.calls == 0
     assert videos[0]["opening_direction"] == direction_key
     assert pipeline._opening_direction_for_video(videos[0]).task_key == "bedroom-make-bed"
+
+
+@pytest.mark.parametrize("resume_failed_stage", [False, True])
+def test_rejected_hook_plan_receives_feedback_before_persisting_corrected_reaction(
+    tmp_path, resume_failed_stage
+):
+    reason = "Item 4: disbelief does not match timer pressure; use flustered."
+
+    class CorrectingGemini(FormatAwareGemini):
+        feedback = []
+        assignments = []
+
+        def generate_hooks(self, demos, *, formats, review_feedback=None):
+            self.feedback.append(review_feedback)
+            self.assignments.append([(str(d.path), f.key) for d, f in zip(demos, formats)])
+            if review_feedback is None:
+                raise QualityError(reason)
+            items = super().generate_hooks(demos, formats=formats)
+            items[-1]["reaction_key"] = "flustered"
+            return items
+
+    gemini = CorrectingGemini()
+    pipeline = Pipeline(
+        Settings(
+            data_dir=tmp_path, quality_retries=2, gemini_api_key="", kling_api_key="",
+            telegram_bot_token="", telegram_chat_id="",
+        ),
+        gemini=gemini, kling=object(), composer=object(),
+    )
+    run_date = date(2026, 10, 3)
+    batch = pipeline.database.get_or_create_batch(run_date, 4)
+    if resume_failed_stage:
+        pipeline.database.start_batch_stage(batch["id"], "hooks")
+        pipeline.database.fail_batch_stage(batch["id"], "hooks", reason)
+
+    rows = pipeline._ensure_hooks(batch["id"], 4, _demos(), run_date)
+
+    assert gemini.feedback == ([reason] if resume_failed_stage else [None, reason])
+    assert all(assignment == gemini.assignments[0] for assignment in gemini.assignments)
+    assert len(pipeline.database.list_videos(batch["id"])) == 4
+    assert get_opening_direction(rows[-1]["opening_direction"]).reaction_key == "flustered"
+    stage = pipeline.database.get_batch_stage(batch["id"], "hooks")
+    assert stage["status"] == "complete"
+    assert stage["attempts"] == 2
+    assert stage["error"] is None
+
+
+def test_repeated_hook_rejection_stays_bounded_and_creates_no_media_plan(tmp_path):
+    class RejectingGemini:
+        feedback = []
+
+        def generate_hooks(self, demos, *, formats, review_feedback=None):
+            self.feedback.append(review_feedback)
+            raise QualityError("reaction still contradicts the demo")
+
+    gemini = RejectingGemini()
+    pipeline = Pipeline(
+        Settings(
+            data_dir=tmp_path, quality_retries=2, gemini_api_key="", kling_api_key="",
+            telegram_bot_token="", telegram_chat_id="",
+        ),
+        gemini=gemini, kling=object(), composer=object(),
+    )
+    run_date = date(2026, 10, 3)
+    batch = pipeline.database.get_or_create_batch(run_date, 4)
+
+    with pytest.raises(QualityError, match="reaction still contradicts"):
+        pipeline._ensure_hooks(batch["id"], 4, _demos(), run_date)
+
+    assert gemini.feedback == [None, "reaction still contradicts the demo", "reaction still contradicts the demo"]
+    assert pipeline.database.list_videos(batch["id"]) == []
+    stage = pipeline.database.get_batch_stage(batch["id"], "hooks")
+    assert stage["attempts"] == 3
+    assert stage["status"] == "failed"

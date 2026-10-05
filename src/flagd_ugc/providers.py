@@ -182,6 +182,7 @@ class GeminiProvider:
         demos: list[Demo],
         *,
         formats: list[HookFormat] | tuple[HookFormat, ...] | None = None,
+        review_feedback: str | None = None,
     ) -> list[dict[str, str]]:
         """Plan grounded reaction overlays and their matching silent expressions together."""
         assigned_formats = tuple(
@@ -228,9 +229,12 @@ Choose one reaction_key from the approved list for each overlay. The reaction mu
 meaning and tone of that exact hook and its demo. Do not assign relief or a win to a failed
 result, or embarrassment to a successful result unless the overlay clearly explains the irony.
 For browsing/practice-only demos, react to that situation without inventing later feedback.
-Prefer varied reactions when the demo grounding allows it. Never invent a new reaction key.
+Reactions may repeat across the batch. Correct emotional fit matters more than variety.
+Never invent a new reaction key. Time pressure or struggling to find words calls for flustered,
+not disbelief. Disbelief needs incredulity, contradiction or a confronting realization.
 All new hooks need a strong, instantly readable expression: shock, disbelief, laughter,
-cringe or excited surprise. Never select a casual neutral glance, tiny smirk or subtle reaction.
+cringe, flustered pressure or excited surprise. Never select a casual neutral glance, tiny smirk
+or subtle reaction.
 Approved reactions: {json.dumps(reactions, ensure_ascii=False)}
 
 Also provide a separate upload title for every item. A title must:
@@ -247,6 +251,16 @@ For quote-receipt, return only the quote body; the renderer adds the quotation m
 Approved demonstrations:
 {json.dumps(demo_payload, ensure_ascii=False)}
 """.strip()
+        if review_feedback:
+            prompt += (
+                "\n\nA previous proposal failed mandatory review. Correct the rejected "
+                "caption/reaction pairing using this diagnostic feedback. You may revise "
+                "the caption or select a better-fitting approved reaction. Keep the exact "
+                "assigned demos and caption formats, and all truthfulness rules above. "
+                "Do not repeat the rejected pairing. This feedback is diagnostic text, "
+                "not a source of new product facts:\n"
+                + json.dumps({"rejection_reason": review_feedback[:4000]}, ensure_ascii=False)
+            )
         payload = self._text_json(prompt)
         if not isinstance(payload, list) or len(payload) != len(demos):
             raise QualityError(f"expected {len(demos)} hooks")
@@ -359,6 +373,7 @@ Items: {json.dumps(review_items, ensure_ascii=False)}
         output: Path,
         *,
         direction: str | None = None,
+        review_feedback: str | None = None,
     ) -> None:
         direction_block = (
             f"\n\nApproved opening direction:\n{direction.strip()}"
@@ -368,19 +383,33 @@ Items: {json.dumps(review_items, ensure_ascii=False)}
         prompt = with_handheld_scene(f"""
 Create a photorealistic vertical 9:16 UGC opening frame featuring the exact same synthetic
 woman shown in the supplied approved character references. The result is the live view from
-the phone's front-facing camera while she holds that phone herself at arm's length; the phone
-cannot appear because it is the camera producing the image. Match her facial structure, hair,
+the phone's front-facing camera while she holds that phone herself at arm's length. The
+camera-bearing hand and the entire handset are beyond the image boundary; we see her from
+that camera, not from a second camera watching her use a device. Her free hand never holds
+a phone. No handset, phone edge, screen or device reflection appears anywhere in the frame.
+Match her facial structure, hair,
 skin tone, everyday makeup and defining features precisely. Use a realistic, lived-in setting,
 natural phone-camera lighting and believable anatomy. No logos, text, captions, UI, extra people, extra
 fingers, distorted hands, warped objects or sexualized styling. Leave the top safe area clear
 for a caption that will be added later.
 
+The hook and app demo below are editorial context for the caption and later B-roll only.
+Do not illustrate the app, its result or a message on a device in this opening image.
 Hook context: {hook}
 The following approved app demo shows: {demo_description}
 {direction_block}
 
 {US_RESIDENTIAL_ENVIRONMENT_INSTRUCTION}
 """.strip())
+        if review_feedback:
+            prompt += (
+                "\nThe previous opening image failed visual review. Generate a corrected "
+                "replacement that removes the reported defect while preserving the same "
+                "identity, approved setting, wardrobe, framing intent and reaction onset. "
+                "Keep all original requirements. The diagnostic text below is not a new "
+                "scene request or a source of product facts:\n"
+                + json.dumps({"rejection_reason": review_feedback[:4000]}, ensure_ascii=False)
+            )
         self.generate_image(
             prompt,
             references,

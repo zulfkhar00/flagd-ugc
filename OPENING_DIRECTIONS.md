@@ -15,6 +15,7 @@ stored direction, frame and animation request rather than selecting a new expres
 | disbelief | strong incredulous expression and slight chin recoil |
 | laughing | broad amused grin and one natural shoulder movement |
 | cringing | visible wince, awkward grimace and coupled upper-body recoil |
+| flustered | tense grimace, urgent concentration and small forward lean under pressure |
 | excited | bright wide eyes, delighted grin and spontaneous slight lean forward |
 
 | Scene | Setting | Wardrobe |
@@ -45,6 +46,13 @@ Animation quality review samples six chronological frames at 2 FPS. It checks id
 self-shot framing and a strong expression consistent with the chosen reaction. It rejects
 flat casual motion, repeated speech-like mouth shapes and generation defects; it accepts
 a believable silent gasp or broad grin. Quality retries keep their existing limits.
+Caption-planning retries receive the latest rejection reason, including when a failed batch
+resumes. Timer pressure uses the flustered reaction; disbelief requires incredulity or a
+contradiction. Reactions may repeat when that best fits the approved demos.
+Scene retries also receive the latest generation or visual-review rejection, including on
+resume. The opening prompt treats the hook and app demo as context for later editing rather
+than a reason to show a device. Keep the camera-bearing hand and handset outside the image.
+Scene review retains each rejection reason, and an exhausted scene reports its last defect.
 
 New expressive recipes use v2 direction keys. Older casual v1, task and reaction direction keys remain readable so already planned batches resume with
 their original creative direction. Completed videos are not regenerated. This change needs

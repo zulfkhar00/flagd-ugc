@@ -94,7 +94,39 @@ def test_gemini_model_check_is_read_only():
     assert requests[0].url.path.endswith("/models/gemini-3-pro-image")
 
 
-def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path):
+def test_scene_generation_sends_rejection_feedback_with_the_same_reference_and_format(tmp_path):
+    requests = []
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [
+            {"inlineData": {"mimeType": "image/png", "data": base64.b64encode(b"frame").decode()}}
+        ]}}]})
+
+    reference = tmp_path / "master.jpeg"
+    reference.write_bytes(b"\xff\xd8\xffreference")
+    output = tmp_path / "scene.png"
+    provider = GeminiProvider(
+        "secret", text_model="gemini-2.5-flash", image_model="gemini-3-pro-image",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    feedback = "A phone edge is visible in the upper right."
+    provider.generate_scene(
+        "pov: the opener worked", "an opener exercise with positive feedback", [reference], output,
+        direction="approved American kitchen reaction onset", review_feedback=feedback,
+    )
+
+    request = requests[0]
+    parts = request["contents"][0]["parts"]
+    assert json.dumps({"rejection_reason": feedback}) in parts[0]["text"]
+    assert "approved American kitchen reaction onset" in parts[0]["text"]
+    assert parts[1]["inline_data"]["data"] == base64.b64encode(reference.read_bytes()).decode()
+    assert request["generationConfig"]["imageConfig"] == {"aspectRatio": "9:16", "imageSize": "2K"}
+    assert output.read_bytes() == b"frame"
+
+
+@pytest.mark.parametrize("feedback", [None, "disbelief does not match timer pressure"])
+def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path, feedback):
     requests = []
 
     def handler(request):
@@ -148,6 +180,7 @@ def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path):
     result = provider.generate_hooks(
         [Demo(tmp_path / "demo.mp4", "The app gives clear feedback after a practice date.")],
         formats=[get_hook_format("when")],
+        review_feedback=feedback,
     )
 
     assert result == [
@@ -164,6 +197,14 @@ def test_hook_generation_requires_the_assigned_format_and_reviews_it(tmp_path):
     assert '"title"' in prompt
     assert "Start exactly with `when `" in prompt
     assert "silently reacting beneath the text overlay" in prompt
+    assert '"reaction_key": "flustered"' in prompt
+    assert "Correct emotional fit matters more than variety" in prompt
+    assert "Time pressure or struggling to find words calls for flustered" in prompt
+    if feedback:
+        assert json.dumps({"rejection_reason": feedback}) in prompt
+        assert "Keep the exact assigned demos and caption formats" in prompt
+    else:
+        assert "A previous proposal failed mandatory review" not in prompt
     review_prompt = requests[1]["contents"][0]["parts"][0]["text"]
     assert '"reaction_key": "shocked"' in review_prompt
     assert "fits the overlay and actual demo outcome" in review_prompt
@@ -272,20 +313,38 @@ def test_reaction_animation_review_requires_the_planned_expression(tmp_path, mat
         assert "Lips should remain closed" not in prompt
 
 
-def test_hook_review_can_reject_an_emotion_that_contradicts_the_demo(tmp_path):
+@pytest.mark.parametrize(
+    ("hook", "title", "reaction_key", "description", "reason"),
+    [
+        (
+            "when my practice date goes badly", "the negative date feedback", "excited",
+            "The app gives negative feedback after a failed simulated date.",
+            "excited reaction contradicts the failed date",
+        ),
+        (
+            "when i'm trying to text back before the timer expires",
+            "the timed practice date", "disbelief",
+            "The user sends text replies during a timed simulated date.",
+            "disbelief does not match timer pressure",
+        ),
+    ],
+)
+def test_hook_review_can_reject_an_emotion_that_contradicts_the_demo(
+    tmp_path, hook, title, reaction_key, description, reason
+):
     requests = []
     item = {
         "demo_file": "demo.mp4",
         "hook_format": "when",
-        "hook": "when my practice date goes badly",
-        "title": "the negative date feedback",
-        "reaction_key": "excited",
+        "hook": hook,
+        "title": title,
+        "reaction_key": reaction_key,
     }
 
     def handler(request):
         requests.append(json.loads(request.content))
         result = [item] if len(requests) == 1 else {
-            "passed": False, "reason": "excited reaction contradicts the failed date"
+            "passed": False, "reason": reason
         }
         return httpx.Response(200, json={"candidates": [{"content": {
             "parts": [{"text": json.dumps(result)}]
@@ -297,9 +356,9 @@ def test_hook_review_can_reject_an_emotion_that_contradicts_the_demo(tmp_path):
         image_model="gemini-3-pro-image",
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
-    with pytest.raises(QualityError, match="contradicts the failed date"):
+    with pytest.raises(QualityError, match=reason):
         provider.generate_hooks(
-            [Demo(tmp_path / "demo.mp4", "The app gives negative feedback after a failed simulated date.")],
+            [Demo(tmp_path / "demo.mp4", description)],
             formats=[get_hook_format("when")],
         )
     assert len(requests) == 2

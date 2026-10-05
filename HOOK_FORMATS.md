@@ -40,8 +40,11 @@ The quote and scorecard variants use the same typography but two intentional tex
 - The second Gemini pass rejects copy that does not fit the demo, makes an unsupported claim, or
   breaks the assigned format. It reviews the separate upload title and the chosen reaction at
   the same time; a win/failure cannot contradict the actual demo outcome.
-- New hooks use only shock, disbelief, laughter, cringe or excited surprise. Casual reactions
+- New hooks use only shock, disbelief, laughter, cringe, flustered pressure or excited surprise. Casual reactions
   are archived and rejected by the new-plan boundary.
+- Time pressure uses flustered, not disbelief. Reactions may repeat; emotional fit comes before
+  variety. A rejected plan's review feedback is passed to the next bounded attempt and retained
+  on resume. The semantic reviewer remains mandatory before media generation.
 - Copy and reaction are planned together. The planner returns an approved `reaction_key`;
   the pipeline persists it inside the versioned `opening_direction` before paid media generation.
 - Scorecards are permitted only when the reviewed demo description contains the exact overall

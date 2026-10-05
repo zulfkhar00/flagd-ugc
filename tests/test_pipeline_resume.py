@@ -117,6 +117,123 @@ class FakeComposer:
         output.write_bytes(b"final")
 
 
+@pytest.mark.parametrize("resume", [False, True])
+def test_scene_retry_corrects_reviewed_defect_and_reuses_approved_frame(
+    tmp_path, monkeypatch, resume
+):
+    reason = "A phone edge is visible in the upper right of the image."
+
+    class SceneGemini(FakeGemini):
+        def __init__(self):
+            super().__init__()
+            self.feedback = []
+
+        def generate_scene(
+            self, hook, description, references, output, *, direction=None,
+            review_feedback=None,
+        ):
+            self.feedback.append(review_feedback)
+            assert direction == "approved kitchen reaction onset"
+            super().generate_scene(hook, description, references, output, direction=direction)
+
+        def review_visual(self, images, references, *, kind, reaction_key=None):
+            if not resume and self.review_calls == 0:
+                self.review_calls += 1
+                raise QualityError(reason)
+            return super().review_visual(images, references, kind=kind)
+
+    monkeypatch.setattr(
+        "flagd_ugc.pipeline.validate_vertical_asset", lambda _path: (1080, 1920)
+    )
+    settings = Settings(
+        data_dir=tmp_path, gemini_api_key="", kling_api_key="",
+        telegram_bot_token="", telegram_chat_id="", quality_retries=2,
+    )
+    gemini = SceneGemini()
+    pipeline = Pipeline(settings, gemini=gemini, kling=object(), composer=object())
+    batch = pipeline.database.get_or_create_batch(date(2026, 10, 4), 1)
+    video = pipeline.database.create_videos(
+        batch["id"], [{"hook": "pov: the opener worked", "demo_path": "demo.mp4"}]
+    )[0]
+    intermediate = tmp_path / "intermediate"
+    intermediate.mkdir()
+    if resume:
+        rejected = intermediate / "scene.png"
+        rejected.write_bytes(b"rejected scene")
+        pipeline.database.start_video_stage(video["id"], "scene")
+        pipeline.database.complete_video_stage(video["id"], "scene", output_path=rejected)
+        pipeline.database.start_video_stage(video["id"], "scene_review")
+        pipeline.database.update_video_stage_metadata(
+            video["id"], "scene_review",
+            {"rejections": [{"scene_attempt": 1, "reason": reason}]},
+        )
+        pipeline.database.fail_video_stage(video["id"], "scene_review", reason)
+    direction = SimpleNamespace(
+        scene_prompt=lambda: "approved kitchen reaction onset", reaction_scene_key=None,
+    )
+
+    result = pipeline._ensure_scene(video, [], "approved demo", direction, intermediate)
+    assert result == intermediate / "scene.png"
+    assert gemini.feedback == ([reason] if resume else [None, reason])
+    calls = gemini.scene_calls
+    assert pipeline._ensure_scene(video, [], "approved demo", direction, intermediate) == result
+    assert gemini.scene_calls == calls
+    review = pipeline.database.get_video_stage(video["id"], "scene_review")
+    assert review["status"] == "complete"
+    assert json.loads(review["metadata_json"])["rejections"] == [
+        {"scene_attempt": 1, "reason": reason}
+    ]
+
+
+def test_scene_rejections_keep_history_and_stop_at_the_quality_budget(tmp_path, monkeypatch):
+    reasons = ["visible phone", "device reflection", "phone edge in corner"]
+
+    class RejectingSceneGemini(FakeGemini):
+        def __init__(self):
+            super().__init__()
+            self.feedback = []
+
+        def generate_scene(
+            self, hook, description, references, output, *, direction=None,
+            review_feedback=None,
+        ):
+            self.feedback.append(review_feedback)
+            super().generate_scene(hook, description, references, output, direction=direction)
+
+        def review_visual(self, images, references, *, kind, reaction_key=None):
+            reason = reasons[self.review_calls]
+            self.review_calls += 1
+            raise QualityError(reason)
+
+    monkeypatch.setattr(
+        "flagd_ugc.pipeline.validate_vertical_asset", lambda _path: (1080, 1920)
+    )
+    settings = Settings(
+        data_dir=tmp_path, gemini_api_key="", kling_api_key="",
+        telegram_bot_token="", telegram_chat_id="", quality_retries=2,
+    )
+    gemini = RejectingSceneGemini()
+    pipeline = Pipeline(settings, gemini=gemini, kling=object(), composer=object())
+    batch = pipeline.database.get_or_create_batch(date(2026, 10, 4), 1)
+    video = pipeline.database.create_videos(
+        batch["id"], [{"hook": "pov: the opener worked", "demo_path": "demo.mp4"}]
+    )[0]
+    intermediate = tmp_path / "intermediate"
+    intermediate.mkdir()
+    direction = SimpleNamespace(scene_prompt=lambda: "approved reaction", reaction_scene_key=None)
+
+    for _ in range(2):
+        with pytest.raises(QualityError, match="3 attempts.*Last rejection: phone edge in corner"):
+            pipeline._ensure_scene(video, [], "demo", direction, intermediate)
+    assert gemini.scene_calls == gemini.review_calls == 3
+    assert gemini.feedback == [None, *reasons[:2]]
+    review = pipeline.database.get_video_stage(video["id"], "scene_review")
+    assert json.loads(review["metadata_json"])["rejections"] == [
+        {"scene_attempt": i, "reason": reason}
+        for i, reason in enumerate(reasons, 1)
+    ]
+
+
 @pytest.mark.parametrize("reject_count", [2, 3])
 def test_animation_keeps_rejection_history_and_never_exceeds_budget(
     tmp_path, monkeypatch, reject_count

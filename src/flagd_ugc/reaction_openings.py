@@ -167,6 +167,22 @@ HOOK_REACTIONS: tuple[HookReaction, ...] = (
         expressive=True,
     ),
     HookReaction(
+        key="flustered",
+        label="visibly flustered under pressure",
+        copy_context=(
+            "Time pressure, struggling to find words, or overthinking a practice situation. "
+            "Mention a timer or deadline only when the demo actually supports it."
+        ),
+        movement=(
+            "Her brows draw together, her eyes open wider with urgent concentration, "
+            "and her lips tighten into an obvious tense grimace. Her shoulders tense "
+            "and her head leans toward the recording lens a few centimeters, as "
+            "though scrambling to think. The pressure stays readable at the cut. "
+            "No typing gesture, phone handling, smile or speech-like mouth movement."
+        ),
+        expressive=True,
+    ),
+    HookReaction(
         key="excited",
         label="bright excited surprise",
         copy_context="An exciting small win or positive feedback actually supported by the demonstration.",
@@ -224,7 +240,9 @@ She wears {get_wardrobe(self.wardrobe_key).prompt}.
 
 Her face and upper shoulders are readable, with room above her head for the caption. Keep
 the top safe area clear; do not render any text. {expression} Her attention rests near the
-phone rather than on a household task. Do not bake the completed reaction into this first frame.
+recording lens rather than on a household task. The camera-bearing hand and handset stay
+beyond the image boundary, and her empty free hand stays outside the crop. Do not bake the
+completed reaction into this first frame.
 Preserve the approved character's facial features, skin tone, everyday makeup and hair identity.
 Use normal skin texture and casual asymmetric posture, not a beauty portrait. Lighting comes
 from the actual room or window, with ordinary phone exposure; no studio fill or portrait blur.
@@ -241,7 +259,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         label="seated on the bed edge",
         wardrobe_key="charcoal-hoodie",
         framing=(
-            "She is casually seated on the edge of her bed. The phone is slightly below "
+            "She is casually seated on the edge of her bed. The front-camera viewpoint is slightly below "
             "eye level with an incidental crop into one shoulder; she is not making the bed."
         ),
         setting=US_BEDROOM_SETTING_INSTRUCTION,
@@ -251,7 +269,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         label="standing beside the kitchen counter",
         wardrobe_key="washed-navy-tee",
         framing=(
-            "She stands casually beside the kitchen counter, holding the phone a little "
+            "She stands casually beside the kitchen counter, with the front-camera viewpoint a little "
             "closer than a conventional selfie. One shoulder is slightly raised by the "
             "camera arm. She is not handling anything on the counter."
         ),
@@ -262,7 +280,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         label="leaning back on the sofa",
         wardrobe_key="forest-sweatshirt",
         framing=(
-            "She leans casually back into an ordinary sofa. The phone is slightly above "
+            "She leans casually back into an ordinary sofa. The front-camera viewpoint is slightly above "
             "her eye line and her head sits a little off-centre. Incidental background "
             "fragments include a throw and a coffee table with a mug."
         ),
@@ -283,7 +301,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         wardrobe_key="heather-lilac-tee",
         framing=(
             "She sits slightly sideways in an ordinary bedroom chair, with her face still "
-            "readable near the phone. Frame close enough to crop part of one shoulder. "
+            "readable near the recording lens. Frame close enough to crop part of one shoulder. "
             "Include incidental horizontal blinds and the edge of a dresser."
         ),
     ),
@@ -292,7 +310,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         label="sitting in a safely parked car",
         wardrobe_key="olive-street-layers",
         framing=(
-            "She sits in a safely parked car, phone slightly off-axis. Her face and one "
+            "She sits in a safely parked car, with the front-camera viewpoint slightly off-axis. Her face and one "
             "shoulder fill most of the frame with incidental seat and window edges. "
             "She is not adjusting the seatbelt or driving."
         ),
@@ -308,7 +326,7 @@ REACTION_SCENES: tuple[ReactionScene, ...] = (
         wardrobe_key="cream-knit",
         framing=(
             "She has paused beside an ordinary American apartment laundry closet. "
-            "The phone is held at a casual height with one shoulder partly cropped. "
+            "The front-camera viewpoint is at a casual height with one shoulder partly cropped. "
             "A washer/dryer edge, detergent and laundry basket appear incidentally. "
             "She is not folding or carrying laundry."
         ),

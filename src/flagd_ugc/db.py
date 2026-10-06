@@ -239,14 +239,22 @@ class Database:
                 ),
             )
 
-    def fail_batch_stage(self, batch_id: int, name: str, error: str) -> None:
+    def fail_batch_stage(
+        self, batch_id: int, name: str, error: str, *,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
         with self.connect() as connection:
             connection.execute(
                 """
-                UPDATE batch_stages SET status = 'failed', error = ?, updated_at = ?
+                UPDATE batch_stages SET status = 'failed', error = ?, updated_at = ?,
+                    metadata_json = COALESCE(?, metadata_json)
                 WHERE batch_id = ? AND name = ?
                 """,
-                (error[:4000], _iso(), batch_id, name),
+                (
+                    error[:4000], _iso(),
+                    json.dumps(metadata) if metadata is not None else None,
+                    batch_id, name,
+                ),
             )
 
     def get_batch_stage(self, batch_id: int, name: str) -> sqlite3.Row | None:

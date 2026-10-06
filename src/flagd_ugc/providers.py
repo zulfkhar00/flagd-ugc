@@ -17,7 +17,7 @@ from .camera_style import (
     with_handheld_motion,
     with_handheld_scene,
 )
-from .errors import ProviderError, QualityError, TransientError
+from .errors import HookReviewError, ProviderError, QualityError, TransientError
 from .hook_formats import (
     REACTION_HOOK_FORMATS,
     HookFormat,
@@ -183,6 +183,8 @@ class GeminiProvider:
         *,
         formats: list[HookFormat] | tuple[HookFormat, ...] | None = None,
         review_feedback: str | None = None,
+        previous_hooks: list[dict[str, str]] | None = None,
+        rejected_demo_files: list[str] | None = None,
     ) -> list[dict[str, str]]:
         """Plan grounded reaction overlays and their matching silent expressions together."""
         assigned_formats = tuple(
@@ -192,6 +194,35 @@ class GeminiProvider:
             raise ValueError("each hook demo needs exactly one assigned format")
         if len({item.key for item in assigned_formats}) != len(assigned_formats):
             raise QualityError("a hook batch may not repeat a caption format")
+        assignments = {
+            demo.path.name: (demo, format_definition)
+            for demo, format_definition in zip(demos, assigned_formats, strict=True)
+        }
+        if len(assignments) != len(demos):
+            raise QualityError("a hook batch may not repeat a demo filename")
+        preserved: dict[str, dict[str, str]] = {}
+        if previous_hooks is not None:
+            prior = self._parse_hook_response(
+                [self._hook_response_item(item) for item in previous_hooks], assignments
+            )
+            if (
+                not rejected_demo_files
+                or len(set(rejected_demo_files)) != len(rejected_demo_files)
+                or not set(rejected_demo_files) <= assignments.keys()
+            ):
+                raise QualityError("hook repair must identify its rejected demo files")
+            preserved = {
+                Path(item["demo_path"]).name: item
+                for item in prior
+                if Path(item["demo_path"]).name not in rejected_demo_files
+            }
+        elif rejected_demo_files is not None:
+            raise QualityError("hook repair requires its previous reviewed draft")
+        pending = {
+            filename: assignment
+            for filename, assignment in assignments.items()
+            if filename not in preserved
+        }
         demo_payload = [
             {
                 "file": demo.path.name,
@@ -200,7 +231,7 @@ class GeminiProvider:
                 "format_rule": format_definition.prompt_rule,
                 "example_shape_only": format_definition.example,
             }
-            for demo, format_definition in zip(demos, assigned_formats, strict=True)
+            for demo, format_definition in pending.values()
         ]
         reactions = [
             {"reaction_key": reaction.key, "use_for": reaction.copy_context}
@@ -229,6 +260,9 @@ Choose one reaction_key from the approved list for each overlay. The reaction mu
 meaning and tone of that exact hook and its demo. Do not assign relief or a win to a failed
 result, or embarrassment to a successful result unless the overlay clearly explains the irony.
 For browsing/practice-only demos, react to that situation without inventing later feedback.
+Browsing a list is not inherently funny or shocking. For scenario selection, prefer a
+flustered reaction to overthinking which practice to choose. Laughing needs a clearly
+amusing or self-deprecating premise in the overlay, not merely a description of browsing.
 Reactions may repeat across the batch. Correct emotional fit matters more than variety.
 Never invent a new reaction key. Time pressure or struggling to find words calls for flustered,
 not disbelief. Disbelief needs incredulity, contradiction or a confronting realization.
@@ -251,6 +285,13 @@ For quote-receipt, return only the quote body; the renderer adds the quotation m
 Approved demonstrations:
 {json.dumps(demo_payload, ensure_ascii=False)}
 """.strip()
+        if preserved:
+            prompt += (
+                "\n\nThese items already passed review and will remain unchanged. "
+                "Return only the supplied pending demonstrations, not these approved "
+                "items. Keep new upload titles distinct from the approved titles:\n"
+                + json.dumps(list(preserved.values()), ensure_ascii=False)
+            )
         if review_feedback:
             prompt += (
                 "\n\nA previous proposal failed mandatory review. Correct the rejected "
@@ -262,12 +303,41 @@ Approved demonstrations:
                 + json.dumps({"rejection_reason": review_feedback[:4000]}, ensure_ascii=False)
             )
         payload = self._text_json(prompt)
-        if not isinstance(payload, list) or len(payload) != len(demos):
-            raise QualityError(f"expected {len(demos)} hooks")
-        allowed = {
-            demo.path.name: (demo, format_definition)
-            for demo, format_definition in zip(demos, assigned_formats, strict=True)
+        replacements = self._parse_hook_response(payload, pending)
+        combined = preserved | {
+            Path(item["demo_path"]).name: item for item in replacements
         }
+        results = self._parse_hook_response(
+            [self._hook_response_item(combined[filename]) for filename in assignments],
+            assignments,
+        )
+        try:
+            self.review_hooks(
+                replacements,
+                {filename: assignment[0] for filename, assignment in assignments.items()},
+            )
+        except HookReviewError as exc:
+            raise HookReviewError(
+                str(exc), proposal=results, rejected_demo_files=exc.rejected_demo_files
+            ) from exc
+        return results
+
+    @staticmethod
+    def _hook_response_item(item: dict[str, str]) -> dict[str, str]:
+        try:
+            return {
+                "demo_file": Path(item["demo_path"]).name,
+                **{key: item[key] for key in ("hook_format", "hook", "title", "reaction_key")},
+            }
+        except (KeyError, TypeError) as exc:
+            raise QualityError("reviewed hook draft is missing required fields") from exc
+
+    @staticmethod
+    def _parse_hook_response(
+        payload: Any, allowed: dict[str, tuple[Demo, HookFormat]]
+    ) -> list[dict[str, str]]:
+        if not isinstance(payload, list) or len(payload) != len(allowed):
+            raise QualityError(f"expected {len(allowed)} hooks")
         seen: set[str] = set()
         seen_titles: set[str] = set()
         results: list[dict[str, str]] = []
@@ -317,9 +387,6 @@ Approved demonstrations:
                     "reaction_key": reaction.key,
                 }
             )
-        self.review_hooks(
-            results, {filename: assignment[0] for filename, assignment in allowed.items()}
-        )
         return results
 
     def review_hooks(self, hooks: list[dict[str, str]], demos: dict[str, Demo]) -> None:
@@ -352,18 +419,55 @@ each hook sets up a relatable reaction, rather than just naming a UI screen. Che
 chosen reaction_key fits the overlay and actual demo outcome; do not approve a contradicted
 win/failure or an invented real-world message. An emotion is editorial context, not a claim
 that the app measures the woman's feelings. Browsing-only demos cannot support result claims.
-Return only JSON: {{"passed": boolean, "reason": string}}. Set passed false if any item fails.
+Review each item independently. Browsing a list is not itself amusing: laughing needs a
+specific humorous or self-deprecating premise in the overlay. A relatable thought about
+overthinking which scenario to pick can support flustered without claiming a later result.
+Return only JSON: {{"items": [{{"demo_file": string, "passed": boolean, "reason": string}}]}}.
+Return exactly one decision for every supplied demo_file. Use those filenames verbatim.
+For each rejection, explain what is unsupported and how to fix the caption/reaction pairing.
 
 Items: {json.dumps(review_items, ensure_ascii=False)}
 """.strip()
         review = self._text_json(prompt)
+        if isinstance(review, dict) and "items" in review:
+            decisions = review["items"]
+            expected = {Path(item["demo_path"]).name for item in hooks}
+            if not isinstance(decisions, list) or len(decisions) != len(hooks):
+                raise QualityError("hook review did not assess every supplied demo")
+            seen: set[str] = set()
+            rejected: list[str] = []
+            reasons: list[str] = []
+            for decision in decisions:
+                if (
+                    not isinstance(decision, dict)
+                    or not isinstance(decision.get("demo_file"), str)
+                    or decision.get("demo_file") not in expected
+                    or decision["demo_file"] in seen
+                    or type(decision.get("passed")) is not bool
+                ):
+                    raise QualityError("hook review returned invalid or duplicate decisions")
+                filename = decision["demo_file"]
+                seen.add(filename)
+                if not decision["passed"]:
+                    rejected.append(filename)
+                    reasons.append(f"{filename}: {decision.get('reason') or 'hook review failed'}")
+            if rejected:
+                raise HookReviewError(
+                    "; ".join(reasons), proposal=hooks, rejected_demo_files=rejected
+                )
+            if review.get("passed", True) is not True:
+                raise QualityError("hook review returned contradictory aggregate decision")
+            return
         if not isinstance(review, dict) or review.get("passed") is not True:
             reason = (
                 review.get("reason", "hook safety review failed")
                 if isinstance(review, dict)
                 else "invalid review"
             )
-            raise QualityError(str(reason))
+            raise HookReviewError(
+                str(reason), proposal=hooks,
+                rejected_demo_files=[Path(item["demo_path"]).name for item in hooks],
+            )
 
     def generate_scene(
         self,

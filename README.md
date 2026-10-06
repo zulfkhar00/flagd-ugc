@@ -54,6 +54,11 @@ manifest should describe exactly what each clip truthfully demonstrates:
 An omitted manifest is supported for local testing, but filenames then become the only
 grounding descriptions. A reviewed manifest is strongly recommended for production hooks.
 
+Hook planning reviews each caption/reaction pair independently. Quality retries rewrite only
+rejected items and keep approved items unchanged. The reviewed draft and rejected filenames
+are saved in SQLite so a restart can continue the same repair. No scene or animation is
+generated until all hooks pass review; exhausted retries still stop the batch.
+
 ### Preparing iPhone demo recordings
 
 The repository includes a reviewed preparation plan for the initial flagd demo bank. It

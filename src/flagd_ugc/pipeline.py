@@ -21,6 +21,7 @@ from .errors import (
     AssetError,
     ConfigurationError,
     DeliveryUncertain,
+    HookReviewError,
     ProviderValidationError,
     ProxyBlockError,
     QualityError,
@@ -179,12 +180,22 @@ class Pipeline:
             and previous_stage["error"]
             else None
         )
+        repair_metadata: dict[str, Any] = {}
+        if previous_stage is not None and previous_stage["metadata_json"]:
+            saved = json.loads(previous_stage["metadata_json"])
+            if isinstance(saved, dict) and "draft_hooks" in saved:
+                repair_metadata = saved
         for _ in range(max_quality_attempts):
             self.database.start_batch_stage(batch_id, "hooks")
             try:
                 generation_options: dict[str, Any] = {"formats": formats}
                 if last_error is not None:
                     generation_options["review_feedback"] = str(last_error)
+                if repair_metadata:
+                    generation_options["previous_hooks"] = repair_metadata["draft_hooks"]
+                    generation_options["rejected_demo_files"] = repair_metadata[
+                        "rejected_demo_files"
+                    ]
                 items = retry_transient(
                     lambda: self.gemini.generate_hooks(chosen, **generation_options),
                     retries=self.settings.transient_retries,
@@ -211,7 +222,14 @@ class Pipeline:
                 return rows
             except QualityError as exc:
                 last_error = exc
-                self.database.fail_batch_stage(batch_id, "hooks", str(exc))
+                if isinstance(exc, HookReviewError):
+                    repair_metadata = {
+                        "draft_hooks": exc.proposal,
+                        "rejected_demo_files": exc.rejected_demo_files,
+                    }
+                self.database.fail_batch_stage(
+                    batch_id, "hooks", str(exc), metadata=repair_metadata or None
+                )
                 continue
             except Exception as exc:
                 self.database.fail_batch_stage(batch_id, "hooks", str(exc))

@@ -14,5 +14,5 @@ COPY src ./src
 RUN pip install --no-cache-dir .
 
 VOLUME ["/data"]
-CMD ["flagd-ugc", "daemon"]
+CMD ["sleep", "infinity"]
 

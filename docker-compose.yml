@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     init: true
-    command: ["flagd-ugc", "daemon"]
+    command: ["sleep", "infinity"]
     environment:
       DATA_DIR: /data
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

@@ -1,0 +1,10 @@
+.env
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+runs/
+.control.sock
+tests/
+launchd/
+scripts/

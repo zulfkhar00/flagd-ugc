@@ -1,5 +1,9 @@
 # flagd UGC pipeline
 
+The separate [visual phone-control prototype](phone-agent/README.md) lives in
+`phone-agent/`. It has its own dependencies and commands and is not part of the
+deployed UGC daemon.
+
 A private, resumable Python 3.12 service that creates four 15-second vertical flagd videos
 every day and delivers them to one Telegram chat. It does not post to social platforms and
 does not collect analytics.

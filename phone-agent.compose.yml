@@ -1,0 +1,38 @@
+# Deploy this as a separate Dokploy Compose application. Route a TLS domain to
+# service flagd-phone-agent, container port 8787. Do not publish a raw host port.
+services:
+  flagd-phone-agent:
+    build:
+      context: ./phone-agent
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      PHONE_DEVICE_TOKEN: ${PHONE_DEVICE_TOKEN:?Set a random 32+ character device token in Dokploy}
+      PHONE_DEVICE_ID: ${PHONE_DEVICE_ID:-}
+      PHONE_GEMINI_API_KEY: ${PHONE_GEMINI_API_KEY:?Set the phone agent Gemini key in Dokploy}
+      PHONE_VISION_MODEL: ${PHONE_VISION_MODEL:?Set the phone agent vision model in Dokploy}
+      PHONE_BROWSE_MODEL: ${PHONE_BROWSE_MODEL:-}
+      PHONE_NAV_MODEL: ${PHONE_NAV_MODEL:-}
+      PHONE_SEMANTIC_NAV: ${PHONE_SEMANTIC_NAV:-0}
+      PHONE_SEMANTIC_MODEL: ${PHONE_SEMANTIC_MODEL:-}
+      PHONE_KEEP_SCREEN_AWAKE: "0"
+      PHONE_PARK_ON_FINISH: "1"
+    expose:
+      - "8787"
+    volumes:
+      - flagd-phone-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8787), 2).close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  flagd-phone-data:
+    name: flagd-phone-data

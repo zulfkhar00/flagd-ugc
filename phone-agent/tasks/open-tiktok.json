@@ -1,0 +1,5 @@
+{
+  "goal": "From the current screen, open TikTok using the visible launcher or app switcher. Reach the main TikTok screen. Do not like, comment, follow or publish anything. Stop when TikTok is visibly open. If authentication is required, hand control to the operator.",
+  "text_fields": {},
+  "max_steps": 15
+}

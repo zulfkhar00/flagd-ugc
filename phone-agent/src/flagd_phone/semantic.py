@@ -60,6 +60,8 @@ class Element:
     id: int
     bounds: tuple[int, int, int, int]
     label: str
+    text: str
+    hint: str
     role: str
     resource_id: str
     clickable: bool
@@ -130,8 +132,10 @@ class SemanticScreen:
             visible = value.get("isVisibleToUser", value.get("visibleToUser", True)) is not False
             if bounds and visible:
                 password = _flag(value, "isPassword", "password")
+                raw_text = "" if password else _clean(value.get("text"))
+                hint = "" if password else _clean(value.get("hint") or value.get("hintText"))
                 label = "[password field]" if password else _clean(
-                    value.get("text") or value.get("contentDescription") or value.get("hint"))
+                    raw_text or value.get("contentDescription") or hint)
                 clickable = _flag(value, "isClickable", "clickable")
                 editable = _flag(value, "isEditable", "editable")
                 scrollable = _flag(value, "isScrollable", "scrollable")
@@ -142,6 +146,7 @@ class SemanticScreen:
                 if label or clickable or editable or scrollable:
                     elements.append(Element(
                         id=len(elements) + 1, bounds=bounds, label=label,
+                        text=raw_text, hint=hint,
                         role=_clean(value.get("className") or value.get("role"), 80).rsplit(".", 1)[-1],
                         resource_id=_clean(value.get("resourceId") or value.get("viewIdResourceName"), 100),
                         clickable=clickable, editable=editable,
@@ -162,7 +167,8 @@ class SemanticScreen:
 
         walk(result)
         fingerprint = hashlib.sha256(json.dumps(
-            [(e.bounds, e.label, e.clickable, e.editable, e.focused, e.checked, e.selected)
+            [(e.bounds, e.label, e.text, e.hint, e.clickable, e.editable,
+              e.focused, e.checked, e.selected)
              for e in elements], ensure_ascii=False, separators=(",", ":")
         ).encode()).hexdigest()
         return cls(tuple(elements), frame.width, frame.height, time.monotonic(),
@@ -177,7 +183,8 @@ class SemanticScreen:
                 ("checked", element.checked), ("selected", element.selected),
             ) if enabled)
             label = json.dumps(element.label, ensure_ascii=False)
-            lines.append(f"[{element.id}] {element.role or 'view'} {label} "
+            hint = f" hint={json.dumps(element.hint, ensure_ascii=False)}" if element.hint else ""
+            lines.append(f"[{element.id}] {element.role or 'view'} {label}{hint} "
                          f"bounds={','.join(map(str, element.bounds))} {flags}")
         return "\n".join(lines)
 

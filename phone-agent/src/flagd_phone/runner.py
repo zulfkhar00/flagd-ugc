@@ -241,10 +241,12 @@ async def run_agent(
     compact = task.get("mode") in ("browse", "publish")
     planned = (not compact and callable(getattr(model, "plan", None))
                and callable(getattr(model, "assess", None)))
-    guarded_enabled = (task.get("mode") != "publish" and (
-        task.get("guarded_continuations", False)
-        or os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
-        in {"1", "true", "yes", "on"}))
+    # Publication tasks opt in individually. The service default applies only
+    # to browsing and general navigation until field guards pass live checks.
+    guarded_enabled = (task.get("guarded_continuations", False)
+        or (task.get("mode") != "publish" and
+            os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
+            in {"1", "true", "yes", "on"}))
     pending_followup: tuple[dict[str, str], str] | None = None
     scope = AuthorizationState(task)
     started = time.monotonic()
@@ -333,18 +335,19 @@ async def run_agent(
             if pending_followup is not None and rejection_feedback is None:
                 spec, expected_app = pending_followup
                 pending_followup = None
+                guard_diagnostics: dict[str, Any] = {}
                 try:
                     current_screen = SemanticScreen.from_portal(
                         await asyncio.wait_for(portal.call("state", {"filter": True}),
                                                timeout=min(5, remaining) if remaining else 5), frame)
                     preplanned_action = resolve_followup(
                         spec, current_screen, frame, expected_app=expected_app,
-                        text_fields=task.get("text_fields", {}))
-                except (PortalError, ValueError, TypeError, TimeoutError):
-                    pass
+                        text_fields=task.get("text_fields", {}), diagnostics=guard_diagnostics)
+                except (PortalError, ValueError, TypeError, TimeoutError) as error:
+                    guard_diagnostics["rejection"] = type(error).__name__
                 journal.record("guarded_followup_check", step=step,
                                matched=preplanned_action is not None,
-                               operation=spec["operation"])
+                               operation=spec["operation"], **guard_diagnostics)
             semantic_screen = None
             if (preplanned_action is None and not planned
                     and os.environ.get("PHONE_SEMANTIC_NAV", "0").lower()

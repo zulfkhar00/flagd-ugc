@@ -204,11 +204,15 @@ image tokens and decision latency, not screenshot-capture time.
 routine navigation step. After the first input, the controller captures a new
 screenshot and accessibility state. It executes the predicted step only when a
 unique safe navigation label or focused search editor matches in the same app;
-otherwise it asks the visual agent again. Public actions, captions, forms and
-publication are excluded. This is off by default and independent of the
-text-first pilot above. It aims to remove a model round trip, not to remove
-screen observation. Compare elapsed time, model calls and result quality on the
-same bounded task before enabling it for regular work.
+otherwise it asks the visual agent again. It can also enter an exact supplied
+title, description, caption or URL after tapping an empty editor, but only if a
+unique focused field is identified by its accessibility hint or resource ID.
+This never follows up with a public action. Publication tasks require an
+explicit `"guarded_continuations": true` in that task; the environment flag
+alone does not opt them in. This feature is independent of the text-first pilot
+above. It aims to remove a model round trip, not to remove screen observation.
+Compare elapsed time, model calls and result quality on the same bounded task
+before enabling it for regular work.
 For one benchmark without restarting the phone service, add
 `"guarded_continuations": true` to a structured task JSON; the service default
 can remain off.

@@ -81,6 +81,107 @@ def test_guard_rejects_public_and_ambiguous_followups():
                             expected_app="com.example.app", text_fields=exact) is None
 
 
+def test_exact_text_followup_needs_matching_focused_field_hint():
+    current = frame()
+    first = action(current, x=100, y=100)
+    fields = {"title": "One reply. Twelve drafts.", "description": "Long supplied copy"}
+    spec = {"operation": "type_text", "target_label": "title",
+            "query": "title", "reason": "Enter the supplied title"}
+    assert validate_followup(spec, first, fields) == spec
+    assert validate_followup({**spec, "query": "description"}, first, fields) is None
+    assert validate_followup({**spec, "target_label": "Post"}, first, fields) is None
+
+    def editor(*, hint, text="", password=False, duplicate=False):
+        nodes = [{"boundsInScreen": [50, 100, 900, 200], "text": text,
+                  "hint": hint, "resourceId": "com.example.app:id/editor",
+                  "isEditable": True, "isFocused": True, "isPassword": password}]
+        if duplicate:
+            nodes.append({**nodes[0], "boundsInScreen": [50, 300, 900, 400]})
+        return SemanticScreen.from_portal({"phone_state": {"packageName": "com.example.app"},
+                                           "a11y_tree": {"children": nodes}}, current)
+
+    selected = resolve_followup(spec, editor(hint="Add a catchy title"), current,
+                                expected_app="com.example.app", text_fields=fields)
+    assert selected["kind"] == "type_text" and selected["text_key"] == "title"
+    # Matching a word in entered body copy is insufficient; the hint or view ID
+    # must identify the editor itself.
+    assert resolve_followup(spec, editor(hint="Write a description", text="title"), current,
+                            expected_app="com.example.app", text_fields=fields) is None
+    assert resolve_followup(spec, editor(hint="Add a catchy title", text="existing title"), current,
+                            expected_app="com.example.app", text_fields=fields) is None
+    assert resolve_followup(spec, editor(hint="Add a catchy title", password=True), current,
+                            expected_app="com.example.app", text_fields=fields) is None
+    assert resolve_followup(spec, editor(hint="Add a catchy title", duplicate=True), current,
+                            expected_app="com.example.app", text_fields=fields) is None
+    assert resolve_followup(spec, editor(hint="Add a catchy title"), current,
+                            expected_app="com.other.app", text_fields=fields) is None
+
+    url_fields = {"volume_url": "https://example.test/post"}
+    url_spec = {"operation": "type_text", "target_label": "url",
+                "query": "volume_url", "reason": "Open supplied URL"}
+    diagnostics = {}
+    url_screen = editor(hint="Search Google or type URL", text="Search Google or type URL")
+    selected = resolve_followup(url_spec, url_screen, current,
+                                expected_app="com.example.app", text_fields=url_fields,
+                                diagnostics=diagnostics)
+    assert selected["text_key"] == "volume_url"
+    assert diagnostics == {"focused_editor_count": 1, "matching_editor_count": 1}
+
+
+def test_publish_task_opt_in_types_exact_field_without_second_model_call(tmp_path, monkeypatch):
+    async def scenario():
+        class Portal:
+            stage = 0
+            calls = []
+
+            async def call(self, method, params=None, *, mutation=False):
+                self.calls.append(method)
+                if method == "screenshot":
+                    return base64.b64encode(frame().png).decode()
+                if method == "state":
+                    hint = "Add a catchy title" if self.stage else ""
+                    return {"phone_state": {"packageName": "com.example.app"},
+                            "a11y_tree": {"children": [{
+                                "boundsInScreen": [50, 100, 900, 200], "hint": hint,
+                                "isEditable": bool(self.stage), "isFocused": bool(self.stage)}]}}
+                if method == "tap":
+                    self.stage = 1
+                    return "ok"
+                if method == "keyboard/input":
+                    self.stage = 2
+                    return "ok"
+                raise AssertionError(method)
+
+        class Model:
+            calls = 0
+
+            async def decide(self, task, current, history):
+                self.calls += 1
+                assert self.calls == 1
+                assert task["execution_context"]["guarded_continuations"]
+                return action(current, x=100, y=100), {"guarded_followup": {
+                    "operation": "type_text", "target_label": "title", "query": "title",
+                    "reason": "Enter exact title"}}
+
+        monkeypatch.setenv("PHONE_GUARDED_CONTINUATIONS", "0")
+        portal, model = Portal(), Model()
+        task = {"mode": "publish", "goal": "Prepare a draft", "max_steps": 2,
+                "guarded_continuations": True, "text_fields": {"title": "Exact title"},
+                "authorization": {"app": "TikTok", "account": "try.flagd",
+                                  "limits": {"publish": 0}},
+                "publication": {"source_id": "test", "slide_count": 6,
+                                "required_text_fields": ["title"]}}
+        result = await run_agent(portal, model, task, Journal(tmp_path / "publish"), execute=True)
+        assert result["status"] == "step_limit"
+        assert result["model_calls"] == model.calls == 1
+        assert portal.calls.count("tap") == portal.calls.count("keyboard/input") == 1
+        events = [json.loads(line)["event"] for line in
+                  (tmp_path / "publish" / "trace.jsonl").read_text().splitlines()]
+        assert "guarded_followup_check" in events
+
+    asyncio.run(scenario())
+
+
 def test_guarded_pilot_can_be_selected_per_task():
     assert validate_task({"goal": "Search", "guarded_continuations": True})[
         "guarded_continuations"] is True
@@ -163,6 +264,36 @@ def test_gemini_guarded_response_keeps_action_and_followup():
                     "guarded_continuations": True}}, current, [])
             assert selected["kind"] == "tap"
             assert metadata["guarded_followup"]["operation"] == "type_query"
+        finally:
+            await model.close()
+
+    asyncio.run(scenario())
+
+
+def test_gemini_publish_decision_accepts_exact_text_followup():
+    async def scenario():
+        current = frame()
+
+        def handler(request):
+            schema = json.loads(request.content)["generationConfig"]["responseJsonSchema"]
+            followup = schema["properties"]["followup"]["properties"]
+            assert "type_text" in followup["operation"]["enum"]
+            output = {"action": action(current, x=100, y=100),
+                      "followup": {"operation": "type_text", "target_label": "title",
+                                   "query": "title", "reason": "Enter supplied title"}}
+            return httpx.Response(200, json={"candidates": [{"finishReason": "STOP", "content": {
+                "parts": [{"text": json.dumps(output)}]}}],
+                "usageMetadata": {"promptTokenCount": 400, "totalTokenCount": 450}})
+
+        model = GeminiVision("test-key", "gemini-3.8-flash",
+                             client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        try:
+            selected, metadata = await model.decide(
+                {"goal": "Enter the exact title", "mode": "publish",
+                 "text_fields": {"title": "Exact title"},
+                 "execution_context": {"guarded_continuations": True}}, current, [])
+            assert selected["kind"] == "tap"
+            assert metadata["guarded_followup"]["query"] == "title"
         finally:
             await model.close()
 

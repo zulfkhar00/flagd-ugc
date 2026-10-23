@@ -19,7 +19,7 @@ from .continuation import validate_followup
 
 GUARDED_FOLLOWUP_SCHEMA: dict[str, Any] = {
     "type": "object", "properties": {
-        "operation": {"type": "string", "enum": ["none", "tap", "type_query", "submit_search"]},
+        "operation": {"type": "string", "enum": ["none", "tap", "type_query", "type_text", "submit_search"]},
         "target_label": {"type": "string"}, "query": {"type": "string"},
         "reason": {"type": "string"},
     },
@@ -39,8 +39,8 @@ Use followup.operation=none unless you can predict one ordinary, non-public
 action on the immediately following screen. The controller will take a fresh
 screenshot and accessibility snapshot, execute the followup only if its exact
 guard matches, then observe again. Never use a followup for posting, liking,
-following, commenting, deleting, purchases, account checks, captions, forms,
-or any other consequential action. Do not guess coordinates for a followup.
+following, commenting, deleting, purchases, account checks, or any other
+consequential action. Do not guess coordinates for a followup.
 For a tap, target_label must be an exact, unique navigation label expected on
 the next screen: Search, Explore, Discover, Home, Back, Profile, or For You.
 After type_text enters an exact supplied search query, you may plan a tap on
@@ -51,6 +51,13 @@ For type_query, target_label must identify a focused Search editor
 and query is the short search text to enter. For submit_search, the first action
 must be type_query or type_text into a focused Search editor; target_label and
 query must both be that exact entered query.
+For type_text, the first action must tap an empty editor for one exact supplied
+field. Set query to the supplied FIELD KEY, not its text; target_label must be
+title, description, caption, url, or address and must identify that editor's
+visible hint. The controller requires a unique focused editable field with a
+matching hint or resource ID before inserting the exact supplied value. Never
+use type_text followup for passwords, comments, recipients, payments or any
+other form field.
 If unsure, use operation=none and empty target_label/query/reason.
 """
 
@@ -82,6 +89,8 @@ For navigation, tap visible Home/Back/app icons or swipe visible UI.
 A thin horizontal pill at the bottom is a gesture-navigation indicator, not a
 Home button. Use an upward swipe starting at the bottom edge to return home;
 do not tap the pill. Observe the new screen before attempting to open another app.
+On an unlocked phone showing only its no-PIN lock screen, start the unlock swipe
+from the lower-middle of the screen rather than the bottom navigation handle.
 Never invent interface targets on a completely black screenshot.
 For forms, titles, descriptions or other exact copy, use type_text with an operator-supplied
 text_key. Do not rewrite supplied values or invent credentials or verification codes.
@@ -647,8 +656,7 @@ class GeminiVision:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         context = self._context(task, frame, history)
         context["memory"] = memory
-        guarded = (task.get("mode", "standard") != "publish"
-                   and task.get("execution_context", {}).get("guarded_continuations") is True)
+        guarded = task.get("execution_context", {}).get("guarded_continuations") is True
         schema = ASSESSMENT_SCHEMA
         if guarded:
             schema = copy.deepcopy(ASSESSMENT_SCHEMA)
@@ -673,8 +681,7 @@ class GeminiVision:
         self, task: dict[str, Any], frame: Frame, history: list[dict[str, Any]]
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Low-level decision interface for controller tests and simpler adapters."""
-        guarded = (task.get("mode", "standard") != "publish"
-                   and task.get("execution_context", {}).get("guarded_continuations") is True)
+        guarded = task.get("execution_context", {}).get("guarded_continuations") is True
 
         async def ask(model_name: str):
             value, metadata = await self._request(

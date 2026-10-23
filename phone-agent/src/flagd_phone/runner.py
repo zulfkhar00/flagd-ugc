@@ -239,7 +239,7 @@ async def run_agent(
     compact = task.get("mode") in ("browse", "publish")
     planned = (not compact and callable(getattr(model, "plan", None))
                and callable(getattr(model, "assess", None)))
-    guarded_enabled = (not planned and task.get("mode") != "publish"
+    guarded_enabled = (task.get("mode") != "publish"
                        and os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
                        in {"1", "true", "yes", "on"})
     pending_followup: tuple[dict[str, str], str] | None = None

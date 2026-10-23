@@ -143,3 +143,88 @@ def test_gemini_guarded_response_keeps_action_and_followup():
             await model.close()
 
     asyncio.run(scenario())
+
+
+def test_planned_agent_can_use_guarded_followup(tmp_path, monkeypatch):
+    async def scenario():
+        class Portal:
+            stage = 0
+
+            async def call(self, method, params=None, *, mutation=False):
+                if method == "screenshot":
+                    return base64.b64encode(frame().png).decode()
+                if method == "state":
+                    return state(editor=self.stage >= 1)
+                if method == "tap":
+                    self.stage = 1
+                    return "ok"
+                if method == "keyboard/input":
+                    self.stage = 2
+                    return "ok"
+                raise AssertionError(method)
+
+        class Model:
+            assessments = 0
+
+            async def plan(self, task):
+                return {"subgoals": [{"id": "search", "description": "Search"}],
+                        "success_criteria": ["Results visible"], "search_queries": []}, {}
+
+            async def assess(self, task, current, history, memory):
+                self.assessments += 1
+                assert task["execution_context"]["guarded_continuations"]
+                selected = (action(current, x=100, y=100) if self.assessments == 1
+                            else action(current, "done"))
+                assessment = {"action": selected, "summary": "Search navigation",
+                              "findings": [], "visited_sources": [], "progress": [],
+                              "answer": "", "answer_finding_ids": []}
+                metadata = ({"guarded_followup": {"operation": "type_query",
+                            "target_label": "Search", "query": "first date tips",
+                            "reason": "Enter search text"}} if self.assessments == 1 else {})
+                return assessment, metadata
+
+        monkeypatch.setenv("PHONE_GUARDED_CONTINUATIONS", "1")
+        monkeypatch.setenv("PHONE_SEMANTIC_NAV", "0")
+        model = Model()
+        result = await run_agent(Portal(), model, {"goal": "Search for first date tips",
+                                                   "max_steps": 3},
+                                 Journal(tmp_path / "planned"), execute=True)
+        assert result["status"] == "completion_candidate"
+        assert model.assessments == 2
+        assert result["model_calls"] == 3  # plan plus two assessments; no third assessment for typing
+
+    asyncio.run(scenario())
+
+
+def test_gemini_assessment_keeps_notebook_and_guarded_followup():
+    async def scenario():
+        current = frame()
+
+        def handler(request):
+            schema = json.loads(request.content)["generationConfig"]["responseJsonSchema"]
+            assert "followup" in schema["properties"]
+            output = {"action": {"kind": "tap", "frame_id": current.id,
+                     "reason": "Open search", "expected_change": "Search editor opens",
+                     "confidence": 0.95, "requires_review": False, "effect": "none",
+                     "x": 100, "y": 100},
+                     "summary": "At search navigation", "findings": [], "visited_sources": [],
+                     "progress": [], "answer": "", "answer_finding_ids": [],
+                     "followup": {"operation": "type_query", "target_label": "Search",
+                                  "query": "first date tips", "reason": "Enter search text"}}
+            return httpx.Response(200, json={"candidates": [{"finishReason": "STOP", "content": {
+                "parts": [{"text": json.dumps(output)}]}}],
+                "usageMetadata": {"promptTokenCount": 400, "totalTokenCount": 450}})
+
+        model = GeminiVision("test-key", "gemini-3.8-flash",
+                             client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        try:
+            assessment, metadata = await model.assess(
+                {"goal": "Search", "execution_context": {"guarded_continuations": True}},
+                current, [], {"plan": {"subgoals": []}, "findings": []})
+            assert assessment["summary"] == "At search navigation"
+            assert "followup" not in assessment
+            assert metadata["guarded_followup"]["operation"] == "type_query"
+        finally:
+            await model.close()
+
+    asyncio.run(scenario())

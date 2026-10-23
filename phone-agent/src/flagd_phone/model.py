@@ -643,12 +643,25 @@ class GeminiVision:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         context = self._context(task, frame, history)
         context["memory"] = memory
-        value, metadata = await self._request(ASSESSMENT_SYSTEM, context, ASSESSMENT_SCHEMA, frame)
+        guarded = (task.get("mode", "standard") != "publish"
+                   and task.get("execution_context", {}).get("guarded_continuations") is True)
+        schema = ASSESSMENT_SCHEMA
+        if guarded:
+            schema = copy.deepcopy(ASSESSMENT_SCHEMA)
+            schema["properties"]["followup"] = GUARDED_FOLLOWUP_SCHEMA
+            schema["required"].append("followup")
+        value, metadata = await self._request(
+            ASSESSMENT_SYSTEM + (GUARDED_SYSTEM if guarded else ""), context, schema, frame)
         try:
             if not isinstance(value, dict):
                 raise ValueError("invalid assessment fields")
+            followup = value.pop("followup", None) if guarded else None
             value = {**value, "action": self._action_pixels(value.get("action"), frame)}
-            return validate_assessment(value, frame, task.get("text_fields", {}), memory), metadata
+            assessment = validate_assessment(value, frame, task.get("text_fields", {}), memory)
+            spec = validate_followup(followup, assessment["action"], task.get("text_fields", {}))
+            if spec is not None:
+                metadata = {**metadata, "guarded_followup": spec}
+            return assessment, metadata
         except ValueError as exc:
             raise ModelOutputError(metadata, reason=str(exc), value=value) from exc
 

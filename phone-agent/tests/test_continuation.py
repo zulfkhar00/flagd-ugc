@@ -6,11 +6,12 @@ import io
 import json
 
 import httpx
+import pytest
 from PIL import Image
 
 from flagd_phone.continuation import resolve_followup, validate_followup
 from flagd_phone.model import GeminiVision
-from flagd_phone.runner import Journal, run_agent
+from flagd_phone.runner import Journal, run_agent, validate_task
 from flagd_phone.semantic import SemanticScreen
 from flagd_phone.vision import Frame
 
@@ -78,6 +79,13 @@ def test_guard_rejects_public_and_ambiguous_followups():
     observed = SemanticScreen.from_portal(search_result, current)
     assert resolve_followup(tap_search, observed, current,
                             expected_app="com.example.app", text_fields=exact) is None
+
+
+def test_guarded_pilot_can_be_selected_per_task():
+    assert validate_task({"goal": "Search", "guarded_continuations": True})[
+        "guarded_continuations"] is True
+    with pytest.raises(ValueError):
+        validate_task({"goal": "Search", "guarded_continuations": "true"})
 
 
 def test_guarded_followup_skips_one_model_round_trip(tmp_path, monkeypatch):
@@ -199,11 +207,12 @@ def test_planned_agent_can_use_guarded_followup(tmp_path, monkeypatch):
                             "reason": "Enter search text"}} if self.assessments == 1 else {})
                 return assessment, metadata
 
-        monkeypatch.setenv("PHONE_GUARDED_CONTINUATIONS", "1")
+        monkeypatch.setenv("PHONE_GUARDED_CONTINUATIONS", "0")
         monkeypatch.setenv("PHONE_SEMANTIC_NAV", "0")
         model = Model()
         result = await run_agent(Portal(), model, {"goal": "Search for first date tips",
-                                                   "max_steps": 3},
+                                                   "max_steps": 3,
+                                                   "guarded_continuations": True},
                                  Journal(tmp_path / "planned"), execute=True)
         assert result["status"] == "completion_candidate"
         assert model.assessments == 2

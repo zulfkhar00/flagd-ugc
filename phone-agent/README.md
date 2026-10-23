@@ -209,6 +209,9 @@ publication are excluded. This is off by default and independent of the
 text-first pilot above. It aims to remove a model round trip, not to remove
 screen observation. Compare elapsed time, model calls and result quality on the
 same bounded task before enabling it for regular work.
+For one benchmark without restarting the phone service, add
+`"guarded_continuations": true` to a structured task JSON; the service default
+can remain off.
 
 Compare an existing run and a pilot run with:
 

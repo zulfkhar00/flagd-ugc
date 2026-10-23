@@ -51,7 +51,7 @@ def validate_task(task: Any) -> dict[str, Any]:
     if not isinstance(task, dict) or set(task) - {
         "goal", "text_fields", "text_limits", "max_steps", "allow_robot_verification",
         "mode", "duration_seconds", "authorization", "publication",
-        "resume_from_job_id", "deletion", "replacement",
+        "resume_from_job_id", "deletion", "replacement", "guarded_continuations",
     }:
         raise ValueError("invalid task fields")
     task = dict(task)
@@ -118,6 +118,8 @@ def validate_task(task: Any) -> dict[str, Any]:
             raise ValueError("resume_from_job_id must identify a previous publication job")
     if type(task.get("allow_robot_verification", False)) is not bool:
         raise ValueError("allow_robot_verification must be a boolean")
+    if type(task.get("guarded_continuations", False)) is not bool:
+        raise ValueError("guarded_continuations must be a boolean")
     if (not isinstance(task.get("goal"), str) or not task["goal"].strip()
             or len(task["goal"]) > 8000):
         raise ValueError("task needs a goal of 1–8000 characters")
@@ -239,9 +241,10 @@ async def run_agent(
     compact = task.get("mode") in ("browse", "publish")
     planned = (not compact and callable(getattr(model, "plan", None))
                and callable(getattr(model, "assess", None)))
-    guarded_enabled = (task.get("mode") != "publish"
-                       and os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
-                       in {"1", "true", "yes", "on"})
+    guarded_enabled = (task.get("mode") != "publish" and (
+        task.get("guarded_continuations", False)
+        or os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
+        in {"1", "true", "yes", "on"}))
     pending_followup: tuple[dict[str, str], str] | None = None
     scope = AuthorizationState(task)
     started = time.monotonic()

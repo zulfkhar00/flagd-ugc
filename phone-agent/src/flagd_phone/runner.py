@@ -12,6 +12,7 @@ from typing import Any
 from .protocol import PortalConnection, PortalError, UncertainAction
 from .model import ModelOutputError, VisionRequestError, VisionTransportError
 from .semantic import SemanticScreen
+from .continuation import resolve_followup, validate_followup
 from .reports import write_report
 from .session import SessionStore
 from .vision import Frame, validate_action, validate_identity_spec
@@ -238,6 +239,10 @@ async def run_agent(
     compact = task.get("mode") in ("browse", "publish")
     planned = (not compact and callable(getattr(model, "plan", None))
                and callable(getattr(model, "assess", None)))
+    guarded_enabled = (not planned and task.get("mode") != "publish"
+                       and os.environ.get("PHONE_GUARDED_CONTINUATIONS", "0").lower()
+                       in {"1", "true", "yes", "on"})
+    pending_followup: tuple[dict[str, str], str] | None = None
     scope = AuthorizationState(task)
     started = time.monotonic()
     budget = task.get("duration_seconds")
@@ -317,11 +322,29 @@ async def run_agent(
                 **scope.context(), "seconds_remaining": remaining,
                 "timer_started": deadline is not None, "publication": task.get("publication"),
                 "playback_seconds": round(watch_seconds), "api_calls_so_far": calls,
+                "guarded_continuations": guarded_enabled,
             }}
             if rejection_feedback is not None:
                 runtime_task["execution_context"]["decision_rejection"] = rejection_feedback
+            preplanned_action = None
+            if pending_followup is not None and rejection_feedback is None:
+                spec, expected_app = pending_followup
+                pending_followup = None
+                try:
+                    current_screen = SemanticScreen.from_portal(
+                        await asyncio.wait_for(portal.call("state", {"filter": True}),
+                                               timeout=min(5, remaining) if remaining else 5), frame)
+                    preplanned_action = resolve_followup(
+                        spec, current_screen, frame, expected_app=expected_app,
+                        text_fields=task.get("text_fields", {}))
+                except (PortalError, ValueError, TypeError, TimeoutError):
+                    pass
+                journal.record("guarded_followup_check", step=step,
+                               matched=preplanned_action is not None,
+                               operation=spec["operation"])
             semantic_screen = None
-            if (not planned and os.environ.get("PHONE_SEMANTIC_NAV", "0").lower()
+            if (preplanned_action is None and not planned
+                    and os.environ.get("PHONE_SEMANTIC_NAV", "0").lower()
                     in {"1", "true", "yes", "on"}
                     and callable(getattr(model, "decide_hybrid", None))):
                 started = time.perf_counter()
@@ -340,10 +363,15 @@ async def run_agent(
                     journal.record("semantic_unavailable", step=step,
                                    error_type=type(exc).__name__,
                                    portal_state_ms=round((time.perf_counter() - started) * 1000, 1))
-            calls += 1
-            journal.record("model_requested", step=step,
-                           perception="semantic_first" if semantic_screen and semantic_screen.useful else "vision")
-            if planned:
+            if preplanned_action is not None:
+                action, metadata = preplanned_action, {"decision_source": "guarded_followup"}
+            else:
+                calls += 1
+                journal.record("model_requested", step=step,
+                               perception="semantic_first" if semantic_screen and semantic_screen.useful else "vision")
+            if preplanned_action is not None:
+                rejection_feedback = None
+            elif planned:
                 context = store.context()
                 if rejection_feedback is not None:
                     context["decision_rejection"] = {
@@ -592,6 +620,21 @@ async def run_agent(
                 journal.frame(step + 1, frame)
                 store.observation(step + 1, frame)
                 continue
+            guarded_anchor = None
+            guarded_spec = (validate_followup(metadata.get("guarded_followup"), action,
+                                              task.get("text_fields", {}))
+                            if guarded_enabled and isinstance(metadata, dict) else None)
+            if guarded_spec is not None:
+                try:
+                    anchor_screen = SemanticScreen.from_portal(
+                        await asyncio.wait_for(portal.call("state", {"filter": True}),
+                                               timeout=min(5, remaining) if remaining else 5), frame)
+                    guarded_anchor = anchor_screen.app or None
+                except (PortalError, ValueError, TypeError, TimeoutError):
+                    pass
+                journal.record("guarded_followup_anchored", step=step,
+                               available=guarded_anchor is not None,
+                               operation=guarded_spec["operation"])
             journal.record("input_intent", step=step, action=action, frame_id=frame.id)
             scope.record_before_input(action)
             if action["kind"] == "confirm_account" and budget and deadline is None:
@@ -626,6 +669,8 @@ async def run_agent(
             navigation_history.append((frame, action))
             navigation_history = navigation_history[-8:]
             history.append({"action": action, "input_acknowledged": True})
+            if guarded_spec is not None and guarded_anchor is not None:
+                pending_followup = (guarded_spec, guarded_anchor)
             # Do not ask the model for another input until fresh pixels arrive.
             frame = await screenshot(portal)
             journal.frame(step + 1, frame)

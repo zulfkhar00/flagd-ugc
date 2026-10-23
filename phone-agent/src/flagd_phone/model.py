@@ -14,6 +14,41 @@ from .vision import ACTION_SCHEMA, CAROUSEL_CHECKS, Frame, validate_action, iden
 from .session import ASSESSMENT_SCHEMA, PLAN_SCHEMA, validate_assessment, validate_plan
 from .prompts import decision_system
 from .semantic import SemanticScreen
+from .continuation import validate_followup
+
+
+GUARDED_FOLLOWUP_SCHEMA: dict[str, Any] = {
+    "type": "object", "properties": {
+        "operation": {"type": "string", "enum": ["none", "tap", "type_query", "submit_search"]},
+        "target_label": {"type": "string"}, "query": {"type": "string"},
+        "reason": {"type": "string"},
+    },
+    "required": ["operation", "target_label", "query", "reason"],
+    "additionalProperties": False,
+}
+GUARDED_DECISION_SCHEMA: dict[str, Any] = {
+    "type": "object", "properties": {
+        "action": ACTION_SCHEMA, "followup": GUARDED_FOLLOWUP_SCHEMA,
+    },
+    "required": ["action", "followup"], "additionalProperties": False,
+}
+GUARDED_SYSTEM = """
+Optional speed-up for routine navigation: return an action plus ONE predicted
+followup. Choose the first action using the current screenshot exactly as usual.
+Use followup.operation=none unless you can predict one ordinary, non-public
+action on the immediately following screen. The controller will take a fresh
+screenshot and accessibility snapshot, execute the followup only if its exact
+guard matches, then observe again. Never use a followup for posting, liking,
+following, commenting, deleting, purchases, account checks, captions, forms,
+or any other consequential action. Do not guess coordinates for a followup.
+For a tap, target_label must be an exact, unique navigation label expected on
+the next screen: Search, Explore, Discover, Home, Back, Profile, or For You.
+For type_query, target_label must identify a focused Search editor
+and query is the short search text to enter. For submit_search, the first action
+must be type_query or type_text into a focused Search editor; target_label and
+query must both be that exact entered query.
+If unsure, use operation=none and empty target_label/query/reason.
+"""
 
 
 class VisionRequestError(RuntimeError):
@@ -621,14 +656,23 @@ class GeminiVision:
         self, task: dict[str, Any], frame: Frame, history: list[dict[str, Any]]
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Low-level decision interface for controller tests and simpler adapters."""
+        guarded = (task.get("mode", "standard") != "publish"
+                   and task.get("execution_context", {}).get("guarded_continuations") is True)
+
         async def ask(model_name: str):
             value, metadata = await self._request(
-                decision_system(task, legacy=SYSTEM), self._context(task, frame, history),
-                ACTION_SCHEMA, frame, model_name=model_name,
+                decision_system(task, legacy=SYSTEM) + (GUARDED_SYSTEM if guarded else ""),
+                self._context(task, frame, history),
+                GUARDED_DECISION_SCHEMA if guarded else ACTION_SCHEMA,
+                frame, model_name=model_name,
             )
             try:
+                followup = value.get("followup") if guarded and isinstance(value, dict) else None
+                value = value.get("action") if guarded and isinstance(value, dict) else value
                 value = self._action_pixels(value, frame)
-                return validate_action(value, frame, task.get("text_fields", {})), metadata
+                action = validate_action(value, frame, task.get("text_fields", {}))
+                return action, metadata, (validate_followup(
+                    followup, action, task.get("text_fields", {})) if guarded else None)
             except ValueError as exc:
                 raise ModelOutputError(metadata, reason=str(exc), value=value) from exc
 
@@ -642,13 +686,14 @@ class GeminiVision:
                 primary = self.navigation_model
         attempts = []
         try:
-            action, metadata = await ask(primary)
+            action, metadata, followup = await ask(primary)
             attempts.append(metadata)
         except ModelOutputError as exc:
             if primary == self.model:
                 raise
             attempts.append(exc.metadata)
             action = None
+            followup = None
         exact_copy = (action is not None and action["kind"] == "type_query"
                       and action.get("query") in task.get("text_fields", {}).values())
         public_input = action is not None and (action["kind"] == "type_comment"
@@ -663,12 +708,15 @@ class GeminiVision:
             # No phone input has executed. The stronger model gets the same
             # pixels and permissions; the controller validates its choice too.
             try:
-                action, metadata = await ask(self.model)
+                action, metadata, followup = await ask(self.model)
             except ModelOutputError as exc:
                 attempts.append(exc.metadata)
                 raise ModelOutputError(self._combined(attempts), reason="fallback decision unusable") from exc
             attempts.append(metadata)
-        return action, self._combined(attempts)
+        combined = self._combined(attempts)
+        if followup is not None:
+            combined["guarded_followup"] = followup
+        return action, combined
 
     async def decide_hybrid(
         self, task: dict[str, Any], frame: Frame, history: list[dict[str, Any]],

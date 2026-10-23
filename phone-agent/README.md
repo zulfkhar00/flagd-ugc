@@ -198,6 +198,18 @@ existing visual assessments. Each step still captures a screenshot for the
 evidence journal, stale-screen check and fallback, so this pilot targets model
 image tokens and decision latency, not screenshot-capture time.
 
+### Experimental guarded continuations
+
+`PHONE_GUARDED_CONTINUATIONS=1` lets a visual decision propose one extra,
+routine navigation step. After the first input, the controller captures a new
+screenshot and accessibility state. It executes the predicted step only when a
+unique safe navigation label or focused search editor matches in the same app;
+otherwise it asks the visual agent again. Public actions, captions, forms and
+publication are excluded. This is off by default and independent of the
+text-first pilot above. It aims to remove a model round trip, not to remove
+screen observation. Compare elapsed time, model calls and result quality on the
+same bounded task before enabling it for regular work.
+
 Compare an existing run and a pilot run with:
 
 ```bash

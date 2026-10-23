@@ -45,6 +45,72 @@ def choice(operation: str, target_id: int) -> dict:
             "confidence": 0.94}
 
 
+def search_screen(text: str, *, focused: bool = True) -> SemanticScreen:
+    return SemanticScreen.from_portal({"a11y_tree": {"children": [
+        {"boundsInScreen": [20, 100, 900, 200], "className": "android.widget.EditText",
+         "text": text, "resourceId": "com.example:id/search_input", "isEditable": True,
+         "isFocused": focused},
+        {"boundsInScreen": [900, 100, 1050, 200], "text": "Clear", "isClickable": True},
+        {"boundsInScreen": [20, 250, 500, 350], "text": "Top", "isClickable": True},
+    ]}}, frame())
+
+
+def test_browse_keyword_can_use_focused_search_field_without_name_matching():
+    current = frame()
+    task = {"mode": "browse", "text_fields": {"keyword_1": "dating conversation tips"}}
+    selected = {**choice("type_text", 0), "text_key": "keyword_1"}
+    action = GeminiVision._semantic_action(selected, search_screen("Search"), current, task)
+    assert action is not None and action["kind"] == "type_text"
+    assert GeminiVision._semantic_action(selected, search_screen("Search", focused=False), current, task) is None
+    assert GeminiVision._semantic_action(selected, search_screen("Search"), current,
+                                         {"mode": "publish", "text_fields": task["text_fields"]}) is None
+
+
+def test_search_submission_needs_visible_entered_browse_keyword():
+    current = frame()
+    task = {"mode": "browse", "text_fields": {"keyword_1": "dating conversation tips"}}
+    selected = choice("submit_search", 0)
+    action = GeminiVision._semantic_action(selected,
+                                          search_screen("dating conversation tips"), current, task)
+    assert action is not None and action["kind"] == "submit_search"
+    assert GeminiVision._semantic_action(selected, search_screen("Search"), current, task) is None
+    assert GeminiVision._semantic_action(selected,
+                                         search_screen("dating conversation tips", focused=False),
+                                         current, task) is None
+
+
+def test_system_lock_screen_skips_text_model():
+    async def scenario():
+        current = frame()
+        raw = state()
+        raw["phone_state"]["packageName"] = "com.android.systemui"
+        screen = SemanticScreen.from_portal(raw, current)
+        requests = []
+
+        def handler(request):
+            body = json.loads(request.content)
+            requests.append(any("inlineData" in part for part in body["contents"][0]["parts"]))
+            output = {"action": {"kind": "wait", "frame_id": current.id,
+                     "reason": "Inspect the lock screen", "expected_change": "Screen remains visible",
+                     "confidence": 0.9, "requires_review": False, "effect": "none",
+                     "duration_ms": 500}}
+            return httpx.Response(200, json={"candidates": [{"finishReason": "STOP", "content": {
+                "parts": [{"text": json.dumps(output)}]}}],
+                "usageMetadata": {"promptTokenCount": 200, "totalTokenCount": 220}})
+
+        model = GeminiVision("test-key", "gemini-3.8-flash",
+                             client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+        try:
+            action, metadata = await model.decide_hybrid({"goal": "Unlock the phone"}, current, [], screen)
+            assert action["kind"] == "wait"
+            assert metadata["perception"] == "vision"
+            assert requests == [True]
+        finally:
+            await model.close()
+
+    asyncio.run(scenario())
+
+
 def test_portal_state_is_compact_and_passwords_are_redacted():
     screen = SemanticScreen.from_portal(state(), frame())
     assert screen.app == "com.example.app"

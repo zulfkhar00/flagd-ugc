@@ -286,6 +286,33 @@ def test_queue_blocks_after_a_publication_attempt(tmp_path, error_type):
     asyncio.run(scenario())
 
 
+def test_skip_blocked_queue_item_keeps_uncertain_post_and_later_work(tmp_path):
+    async def scenario():
+        controller = TaskController(host_with(ConnectedPortal()), NavigationModel(), tmp_path)
+        try:
+            blocked_id, next_id = uuid.uuid4().hex, uuid.uuid4().hex
+            controller.queue.extend([
+                {"id": blocked_id, "task": {"goal": "post A"}, "state": "blocked",
+                 "block_reason": "completion_candidate", "attempt_job_id": "job-a"},
+                {"id": next_id, "task": {"goal": "post B"}, "state": "queued"},
+            ])
+            receipt = controller.skip_blocked_queue_item(
+                blocked_id, "Observed the Reel after Share; destination receipt was missing."
+            )["queue_item"]
+            assert receipt["state"] == "skipped"
+            assert receipt["block_reason"] == "completion_candidate"
+            assert receipt["attempt_job_id"] == "job-a"
+            assert receipt["skip_reason"].startswith("Observed the Reel")
+            assert controller.queue[1]["state"] == "queued"
+            assert controller.status()["queue"]["skipped"] == 1
+            with pytest.raises(ControlError):
+                controller.skip_blocked_queue_item(next_id, "Cannot skip queued work")
+        finally:
+            await controller.close()
+
+    asyncio.run(scenario())
+
+
 def test_queue_waits_for_credit_after_http_402_without_public_action(tmp_path):
     async def scenario():
         run_dir = tmp_path / "failed-model-request"

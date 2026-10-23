@@ -122,7 +122,7 @@ class TaskController:
             "recovery_required": self.recovery_required or bool(portal and portal.uncertain),
             "park_on_finish": self.park_on_finish,
             "queue": {state: sum(item["state"] == state for item in self.queue)
-                      for state in ("queued", "running", "finished", "blocked")},
+                      for state in ("queued", "running", "finished", "blocked", "skipped")},
             "queue_worker_error": self.queue_worker_error,
             "recent_jobs": [self._view(j) for j in list(self.jobs.values())[-10:]],
         }
@@ -240,6 +240,21 @@ class TaskController:
             if item.get("attempt_job_id"):
                 self.cancel(item["attempt_job_id"])
             self._save()
+        return {"queue_item": self._queue_view(item)}
+
+    def skip_blocked_queue_item(self, item_id: str, reason: str) -> dict[str, Any]:
+        """Leave an uncertain post untouched while allowing later distinct jobs to run."""
+        item = next((item for item in self.queue if item["id"] == item_id), None)
+        if item is None:
+            raise ControlError("no_such_queue_item", "Unknown queue item ID.")
+        if item["state"] != "blocked":
+            raise ControlError("not_blocked", "Only a blocked queue item can be skipped.")
+        if not isinstance(reason, str) or not 10 <= len(reason.strip()) <= 500:
+            raise ControlError("invalid_reason", "Supply a short inspection reason.")
+        item["state"] = "skipped"
+        item["skip_reason"] = reason.strip()
+        item["skipped_at"] = time.time()
+        self._save()
         return {"queue_item": self._queue_view(item)}
 
     @staticmethod
@@ -617,6 +632,7 @@ class TaskController:
             "enqueue": {"operation", "task", "execute", "request_id"},
             "queue_status": {"operation", "item_id"},
             "queue_cancel": {"operation", "item_id"},
+            "queue_skip_blocked": {"operation", "item_id", "reason"},
             "queue_expedite": {"operation", "item_id"},
             "queue_reconcile_profile": {"operation", "item_id", "expected_headline"},
             "status": {"operation", "job_id"},
@@ -637,7 +653,7 @@ class TaskController:
         if operation == "queue_reconcile_profile":
             return await self.reconcile_queue_profile(request.get("item_id"),
                                                       request.get("expected_headline"))
-        if operation in ("queue_status", "queue_cancel", "queue_expedite"):
+        if operation in ("queue_status", "queue_cancel", "queue_expedite", "queue_skip_blocked"):
             item_id = request.get("item_id")
             if item_id is not None and not isinstance(item_id, str):
                 raise ControlError("invalid_request", "Queue item ID must be a string.")
@@ -647,6 +663,10 @@ class TaskController:
                 if not item_id:
                     raise ControlError("invalid_request", "Supply the queue item ID to expedite.")
                 return self.expedite_queue(item_id)
+            if operation == "queue_skip_blocked":
+                if not item_id:
+                    raise ControlError("invalid_request", "Supply the blocked queue item ID.")
+                return self.skip_blocked_queue_item(item_id, request.get("reason"))
             if not item_id:
                 raise ControlError("invalid_request", "Supply the queue item ID to cancel.")
             return self.cancel_queue(item_id)

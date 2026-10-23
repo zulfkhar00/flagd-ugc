@@ -399,6 +399,11 @@ the saved job ID and use `queue-status ITEM_ID` to see the reason. `queue-cancel
 ITEM_ID` cancels pending work. A service process must be running for queued work
 to execute; the durable file is `runs/controller-jobs.json`.
 
+After inspecting an uncertain blocked publication, `queue-skip-blocked ITEM_ID
+--reason "..."` preserves that item and its original job receipt as `skipped` while
+allowing later, distinct queue items to proceed. It does not claim that the
+uncertain post succeeded or retry its Share/Post tap.
+
 Automatic verification and queue continuation after a post succeeds but the
 phone disconnects before confirmation is tracked in [TODO.md](TODO.md).
 

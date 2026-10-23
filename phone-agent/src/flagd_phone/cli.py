@@ -128,7 +128,7 @@ async def run(args: argparse.Namespace) -> None:
         finally:
             store.close()
         return
-    if args.command in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-reconcile-profile",
+    if args.command in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-skip-blocked", "queue-reconcile-profile",
                         "status", "cancel", "capture", "acknowledge", "park"):
         await run_client(args)
         return
@@ -260,12 +260,14 @@ async def run_client(args: argparse.Namespace) -> None:
         payload = {"operation": args.command}
         if args.command in ("status", "cancel") and args.job_id is not None:
             payload["job_id"] = args.job_id
-        if args.command in ("queue-status", "queue-cancel", "queue-expedite", "queue-reconcile-profile"):
+        if args.command in ("queue-status", "queue-cancel", "queue-expedite", "queue-skip-blocked", "queue-reconcile-profile"):
             payload["operation"] = args.command.replace("-", "_")
             if args.item_id is not None:
                 payload["item_id"] = args.item_id
             if args.command == "queue-reconcile-profile":
                 payload["expected_headline"] = args.expected_headline
+            if args.command == "queue-skip-blocked":
+                payload["reason"] = args.reason
         if args.command == "acknowledge":
             payload["frame_id"] = args.frame_id
         if args.command == "capture" and args.show_overlay:
@@ -343,11 +345,11 @@ def build_parser() -> argparse.ArgumentParser:
                                  help="execute bounded navigation; default is one decision preview")
             command.add_argument("--allow-robot-verification", action="store_true",
                                  help="operator authorizes solving ordinary visible robot checks for this task")
-    for name in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-reconcile-profile",
+    for name in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-skip-blocked", "queue-reconcile-profile",
                  "status", "cancel", "capture", "acknowledge", "park"):
         command = sub.add_parser(name, help="control the already running phone service")
         command.add_argument("--control-socket", type=Path, default=socket_default)
-        if name in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-reconcile-profile", "status", "cancel"):
+        if name in ("submit", "enqueue", "queue-status", "queue-cancel", "queue-expedite", "queue-skip-blocked", "queue-reconcile-profile", "status", "cancel"):
             command.add_argument("--api-url", help="send through authenticated instruction HTTP API instead of the local socket")
         if name in ("submit", "enqueue"):
             instruction = command.add_mutually_exclusive_group(required=True)
@@ -369,6 +371,9 @@ def build_parser() -> argparse.ArgumentParser:
             command.add_argument("item_id", help="cancel a queued item")
         elif name == "queue-expedite":
             command.add_argument("item_id", help="retry a waiting item now when the previous attempt had no public action")
+        elif name == "queue-skip-blocked":
+            command.add_argument("item_id", help="leave an uncertain blocked item untouched and continue later jobs")
+            command.add_argument("--reason", required=True, help="inspection reason retained in the queue receipt")
         elif name == "queue-reconcile-profile":
             command.add_argument("item_id", help="blocked queue item after an uncertain Post")
             command.add_argument("expected_headline", help="exact first-slide headline visible on the newest profile tile")

@@ -268,6 +268,7 @@ async def run_agent(
     authorization_rejections = 0
     review_rejections = 0
     confidence_rejections = 0
+    destination_rejections = 0
     publication_account = None
     def usage(metadata: dict[str, Any]) -> None:
         nonlocal total_tokens, calls
@@ -457,6 +458,27 @@ async def run_agent(
                 journal.record("handoff_reconsideration", step=step, reason=action["reason"])
                 history.append({"handoff_reconsidered": True, "reason": action["reason"],
                                 "input_acknowledged": False})
+                frame = await screenshot(portal)
+                journal.frame(step + 1, frame)
+                store.observation(step + 1, frame)
+                continue
+            if (action["kind"] == "done" and task.get("mode") == "publish"
+                    and scope.used["publish"] == 1 and not action.get("published_account")):
+                destination_rejections += 1
+                journal.record("publication_destination_unconfirmed", step=step,
+                               reason=action["reason"])
+                if destination_rejections >= 3 or step + 1 >= task["max_steps"]:
+                    status = "needs_review"
+                    break
+                rejection_feedback = (
+                    "The Share/Post tap was already attempted and must never be repeated. "
+                    "A general feed, vanished upload banner or unnamed success message does not "
+                    "establish the destination. Inspect the intended account's own profile and "
+                    "its newest post, refreshing if necessary. Use done with published_account "
+                    "only when that account and post are visible. Otherwise keep the result "
+                    "uncertain; do not claim publication succeeded."
+                )
+                history.append({"destination_unconfirmed": True, "input_acknowledged": False})
                 frame = await screenshot(portal)
                 journal.frame(step + 1, frame)
                 store.observation(step + 1, frame)

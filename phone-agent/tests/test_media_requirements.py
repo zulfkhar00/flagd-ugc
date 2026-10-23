@@ -87,7 +87,7 @@ def test_reel_execution_records_actual_music_and_sends_only_one_publish(tmp_path
                     decision(frame, "type_text", text_key="caption"),
                     media(frame),
                     decision(frame, x=20, y=30, effect="publish"),
-                    decision(frame, "done"),
+                    decision(frame, "done", published_account="try.flagd"),
                 ]
                 return actions[self.calls - 1], {"usage": {"totalTokenCount": 10}}
 
@@ -107,6 +107,36 @@ def test_reel_execution_records_actual_music_and_sends_only_one_publish(tmp_path
     asyncio.run(scenario())
 
 
+def test_unnamed_feed_after_share_does_not_finish_publication(tmp_path):
+    async def scenario():
+        class Model:
+            calls = 0
+
+            async def decide(self, task, frame, history):
+                self.calls += 1
+                if self.calls == 5:
+                    assert "must never be repeated" in task["execution_context"]["decision_rejection"]
+                actions = [
+                    decision(frame, "type_text", text_key="caption"),
+                    media(frame),
+                    decision(frame, x=20, y=30, effect="publish"),
+                    decision(frame, "done", published_account=""),
+                    decision(frame, x=40, y=50),  # Inspect own profile after Share.
+                    decision(frame, "done", published_account="try.flagd"),
+                ]
+                return actions[self.calls - 1], {}
+
+        portal = FakePortal()
+        result = await run_agent(portal, Model(), reel_task(),
+                                 Journal(tmp_path / "reel"), execute=True)
+        assert result["status"] == "completion_candidate"
+        assert result["publication_account"] == "try.flagd"
+        assert result["public_action_attempts"]["publish"] == 1
+        assert [method for method, _, _ in portal.calls].count("tap") == 2
+
+    asyncio.run(scenario())
+
+
 def test_rejected_share_can_reconfirm_after_next_without_dispatching_early(tmp_path):
     async def scenario():
         class Model:
@@ -122,7 +152,7 @@ def test_rejected_share_can_reconfirm_after_next_without_dispatching_early(tmp_p
                     decision(frame, x=30, y=40, effect="publish"),  # Rejected, never dispatched.
                     media(frame),
                     decision(frame, x=30, y=40, effect="publish"),
-                    decision(frame, "done"),
+                    decision(frame, "done", published_account="try.flagd"),
                 ]
                 if self.calls == 5:
                     assert "confirm the requested media format" in task["execution_context"]["decision_rejection"]
@@ -172,7 +202,7 @@ def test_recoverable_handoff_returns_to_agent_without_guessing_a_ui_action(tmp_p
                     return media(frame), {}
                 if self.calls == 4:
                     return decision(frame, x=20, y=30, effect="publish"), {}
-                return decision(frame, "done"), {}
+                return decision(frame, "done", published_account="try.flagd"), {}
         portal = FakePortal()
         result = await run_agent(portal, Model(), reel_task(), Journal(tmp_path / "reel"), execute=True)
         assert result["status"] == "completion_candidate"

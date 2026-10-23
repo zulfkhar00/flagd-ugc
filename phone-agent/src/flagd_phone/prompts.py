@@ -67,8 +67,14 @@ the original order and first-slide cover. TikTok titles/descriptions are separat
 Instagram uses one caption. Enter every required_text_field verbatim with type_text.
 Source values alone are not visible proof of correctness. Publish only once with
 effect=publish after all required checkpoints. Never retry that tap if uncertain.
-When preview_check_required is false, skip extra preview/caption inspections and
-post-publication profile visits; account and media requirements still apply.
+When preview_check_required is false, skip extra pre-publication preview/caption
+inspections; account and media requirements still apply. After Share on
+Instagram, do not treat the disappearing upload banner or return to a general
+Reels feed as proof of publication. Visit the intended account's own profile,
+refresh it if needed, and check that its newest grid tile matches the source's
+first-slide headline. Never tap Share again while checking. Report done with
+published_account only when the account and new post are visibly established;
+otherwise leave publication uncertain for inspection.
 Finish on visible publication success or the newly published post.
 For done, published_account is the account literally named in a publication-success
 message, or empty if no destination is shown. Do not substitute the requested

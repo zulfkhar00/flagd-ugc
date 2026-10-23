@@ -84,7 +84,7 @@ def test_checkpoint_recovery_resets_after_progress_without_allowing_an_early_pos
                     decision(frame, x=30, y=40, effect="publish"),
                     media(frame),
                     decision(frame, x=30, y=40, effect="publish"),
-                    decision(frame, "done"),
+                    decision(frame, "done", published_account="try.flagd"),
                 ]
                 return actions[self.calls - 1], {}
 

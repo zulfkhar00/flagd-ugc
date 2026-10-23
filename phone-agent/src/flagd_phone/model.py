@@ -43,6 +43,10 @@ following, commenting, deleting, purchases, account checks, captions, forms,
 or any other consequential action. Do not guess coordinates for a followup.
 For a tap, target_label must be an exact, unique navigation label expected on
 the next screen: Search, Explore, Discover, Home, Back, Profile, or For You.
+After type_text enters an exact supplied search query, you may plan a tap on
+the visible Search button: target_label=Search and query must be that exact
+supplied text. The controller will require the focused editor to visibly show
+that exact query and a unique Search button before tapping.
 For type_query, target_label must identify a focused Search editor
 and query is the short search text to enter. For submit_search, the first action
 must be type_query or type_text into a focused Search editor; target_label and

@@ -52,8 +52,13 @@ def validate_followup(spec: Any, first_action: dict[str, Any],
         if first_action["kind"] != "tap" or not query.strip() or any(ord(c) < 32 for c in query):
             return None
     elif operation == "tap":
-        if (first_action["kind"] != "tap" or query
-                or label.strip().casefold() not in SAFE_NAV_LABELS):
+        if label.strip().casefold() not in SAFE_NAV_LABELS:
+            return None
+        if first_action["kind"] == "type_text":
+            if (label.strip().casefold() != "search"
+                    or query != (text_fields or {}).get(first_action.get("text_key"))):
+                return None
+        elif first_action["kind"] != "tap" or query:
             return None
     return {"operation": operation, "target_label": label.strip(),
             "query": query, "reason": reason}
@@ -72,6 +77,11 @@ def resolve_followup(spec: dict[str, str], screen: SemanticScreen, frame: Frame,
         "confidence": 0.9, "requires_review": False, "effect": "none",
     }
     if operation == "tap":
+        if spec["query"]:
+            editors = [e for e in screen.elements if e.editable and e.focused and not e.password
+                       and spec["query"].casefold() in e.label.casefold()]
+            if len(editors) != 1:
+                return None
         matches = [e for e in screen.elements if e.clickable and not e.password
                    and e.label.casefold() == label and not PUBLIC_LABEL.search(e.label)]
         if len(matches) != 1:

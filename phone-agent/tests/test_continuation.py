@@ -62,6 +62,22 @@ def test_guard_rejects_public_and_ambiguous_followups():
               "query": "first date tips", "reason": "Submit the search"}
     assert validate_followup(submit, first_text, exact) == submit
     assert validate_followup(submit, first_text, {"keyword_1": "different query"}) is None
+    tap_search = {"operation": "tap", "target_label": "Search",
+                  "query": "first date tips", "reason": "Search the exact query"}
+    assert validate_followup(tap_search, first_text, exact) == tap_search
+    search_result = {"phone_state": {"packageName": "com.example.app"}, "a11y_tree": {
+        "children": [
+            {"boundsInScreen": [20, 100, 800, 200], "text": "first date tips",
+             "isEditable": True, "isFocused": True},
+            {"boundsInScreen": [850, 100, 1050, 200], "text": "Search", "isClickable": True},
+        ]}}
+    observed = SemanticScreen.from_portal(search_result, current)
+    assert resolve_followup(tap_search, observed, current,
+                            expected_app="com.example.app", text_fields=exact)["kind"] == "tap"
+    search_result["a11y_tree"]["children"][0]["text"] = "different query"
+    observed = SemanticScreen.from_portal(search_result, current)
+    assert resolve_followup(tap_search, observed, current,
+                            expected_app="com.example.app", text_fields=exact) is None
 
 
 def test_guarded_followup_skips_one_model_round_trip(tmp_path, monkeypatch):

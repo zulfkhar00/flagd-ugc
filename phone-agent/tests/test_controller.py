@@ -266,14 +266,15 @@ def test_queue_retries_transport_failure_only_when_no_public_action_occurred(tmp
     asyncio.run(scenario())
 
 
-def test_queue_blocks_after_a_publication_attempt(tmp_path):
+@pytest.mark.parametrize("error_type", ["VisionTransportError", "PortalError"])
+def test_queue_blocks_after_a_publication_attempt(tmp_path, error_type):
     async def scenario():
         controller = TaskController(host_with(ConnectedPortal()), NavigationModel(), tmp_path)
         try:
             item = {"id": uuid.uuid4().hex, "task": {"goal": "post", "publication": {"source_id": "one"},
                     "authorization": {"account": "example"}}, "state": "running", "retry_count": 0}
             controller.queue.append(item)
-            job = {"id": uuid.uuid4().hex, "state": "failed", "error_type": "VisionTransportError",
+            job = {"id": uuid.uuid4().hex, "state": "failed", "error_type": error_type,
                    "result": {"status": "failed", "public_action_attempts": {
                        "publish": 1, "delete": 0, "like": 0, "comment": 0}}}
             controller._settle_queue_item(item, job)
@@ -330,6 +331,36 @@ def test_queue_restores_old_http_402_block_on_restart(tmp_path):
         first.queue.append({
             "id": item_id, "task": task, "state": "blocked", "retry_count": 0,
             "block_reason": "VisionRequestError", "attempt_job_id": job_id,
+        })
+        first._save()
+        await first.close()
+
+        second = TaskController(host_with(None), NavigationModel(), tmp_path)
+        try:
+            item = second.queue_status(item_id)["queue_item"]
+            assert item["state"] == "queued"
+            assert item["retry_count"] == 1
+            assert item["last_job_id"] == job_id
+        finally:
+            await second.close()
+
+    asyncio.run(scenario())
+
+
+def test_queue_restores_portal_failure_before_public_action(tmp_path):
+    async def scenario():
+        first = TaskController(host_with(None), NavigationModel(), tmp_path)
+        item_id, job_id, request_id = uuid.uuid4().hex, uuid.uuid4().hex, str(uuid.uuid4())
+        task = {"goal": "Open Settings", "max_steps": 3}
+        first.jobs[job_id] = {
+            "id": job_id, "request_id": request_id, "task": task,
+            "state": "failed", "error_type": "PortalError", "run_dir": str(tmp_path),
+            "result": {"status": "failed", "public_action_attempts": {
+                "publish": 0, "delete": 0, "like": 0, "comment": 0}},
+        }
+        first.queue.append({
+            "id": item_id, "task": task, "state": "blocked", "retry_count": 0,
+            "block_reason": "PortalError", "attempt_job_id": job_id,
         })
         first._save()
         await first.close()

@@ -69,12 +69,13 @@ class TaskController:
                     # A process restart is never permission to replay a task.
                     job.update(state="interrupted", finished_at=time.time())
                     self.recovery_required = True
-            # Older controllers blocked on HTTP 402. Restore only failures that
-            # happened before any public action, so the queue can wait for credit.
+            # Restore older blocked transient failures only when the previous
+            # attempt had no public action. _settle_queue_item preserves the
+            # block for uncertain input and publication attempts.
             for item in self.queue:
-                if item["state"] == "blocked" and item.get("block_reason") == "VisionRequestError":
+                if item["state"] == "blocked":
                     job = self.jobs.get(item.get("attempt_job_id"))
-                    if job is not None and self._vision_http_status(job) == 402:
+                    if job is not None and self._transient_failure(job):
                         self._settle_queue_item(item, job)
             self._save()
         self.queue_worker = asyncio.create_task(self._queue_loop())
@@ -255,7 +256,8 @@ class TaskController:
     def _transient_failure(cls, job: dict[str, Any]) -> bool:
         error = job.get("error_type")
         if error in {"VisionTransportError", "ReadTimeout", "ConnectTimeout", "ConnectError",
-                     "RemoteProtocolError", "PoolTimeout", "ConnectionClosed", "OSError"}:
+                     "RemoteProtocolError", "PoolTimeout", "ConnectionClosed", "OSError",
+                     "PortalError"}:
             return True
         if error == "VisionRequestError":
             return cls._vision_http_status(job) in (402, 429, 500, 502, 503, 504)
